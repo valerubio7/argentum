@@ -1,9 +1,46 @@
 [project]
 name = "argentum"
 version = "0.1.0"
-description = "Add your description here"
+description = "ARGENTUM"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    # Web Framework
     "fastapi[standard]>=0.121.0",
+    
+    # Database
+    "sqlalchemy>=2.0.44",
+    "asyncpg>=0.30.0",
+    
+    # Authentication & Security
+    "bcrypt>=5.0.0",
+    "pyjwt>=2.10.1",
+    
+    # Configuration
+    "pydantic-settings>=2.11.0",
+    "python-dotenv>=1.2.1",
 ]
+
+[dependency-groups]
+dev = [
+    # Testing
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-cov>=7.0.0",
+    "httpx>=0.28.1",
+    "aiosqlite>=0.21.0",
+    
+    # Code Quality
+    "mypy>=1.18.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = ["-v", "--strict-markers", "--tb=short"]
+markers = [
+    "asyncio: mark test as async",
+]
+asyncio_mode = "auto"
