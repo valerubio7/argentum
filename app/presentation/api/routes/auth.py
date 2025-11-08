@@ -3,6 +3,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.dtos.auth_dtos import LoginDTO, RegisterUserDTO
 from app.application.use_cases.auth.login_user import LoginUser
@@ -17,6 +18,7 @@ from app.presentation.api.dependencies import (
     get_current_user,
     get_login_user_use_case,
     get_register_user_use_case,
+    get_session,
 )
 from app.presentation.api.schemas import (
     LoginRequest,
@@ -50,12 +52,14 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 async def register(
     request: RegisterRequest,
     use_case: Annotated[RegisterUser, Depends(get_register_user_use_case)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> UserResponse:
     """Register a new user.
 
     Args:
         request: Registration request data
         use_case: Register user use case
+        session: Database session
 
     Returns:
         UserResponse: Created user data
@@ -72,6 +76,9 @@ async def register(
         # Execute use case
         user_dto = await use_case.execute(dto)
 
+        # Commit transaction
+        await session.commit()
+
         # Convert DTO to response
         return UserResponse(
             id=user_dto.id,
@@ -83,11 +90,13 @@ async def register(
         )
 
     except UserAlreadyExistsError as e:
+        await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except ValueError as e:
+        await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
