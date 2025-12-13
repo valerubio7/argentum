@@ -1,0 +1,23 @@
+{
+  "name": "argentum",
+  "version": "1.0.0",
+  "description": "Financial Platform",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "echo \"Run: bun run dev:frontend and bun run dev:backend in separate terminals\"",
+    "dev:frontend": "cd frontend && bun run dev",
+    "dev:backend": "cd backend && uv run uvicorn main:app --reload",
+
+    "install:frontend": "cd frontend && bun install",
+    "install:backend": "cd backend && uv sync",
+
+    "test:frontend": "cd frontend && bun run test",
+    "test:backend": "cd backend && uv run pytest",
+
+    "build:frontend": "cd frontend && bun run build"
+  },
+  "devDependencies": {}
+}
