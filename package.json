@@ -1,23 +1,24 @@
 {
-  "name": "argentum",
-  "version": "1.0.0",
-  "description": "Financial Platform",
-  "private": true,
-  "workspaces": [
-    "frontend"
-  ],
-  "scripts": {
-    "dev": "echo \"Run: bun run dev:frontend and bun run dev:backend in separate terminals\"",
-    "dev:frontend": "cd frontend && bun run dev",
-    "dev:backend": "cd backend && uv run uvicorn main:app --reload",
+	"name": "argentum",
+	"version": "1.0.0",
+	"description": "Financial Platform",
+	"private": true,
+	"workspaces": [
+		"frontend"
+	],
+	"scripts": {
+		"dev": "echo \"Run: bun run dev:frontend and bun run dev:backend in separate terminals\"",
+		"dev:frontend": "cd frontend && bun run dev",
+		"dev:backend": "cd backend && uv run fastapi dev main.py",
 
-    "install:frontend": "cd frontend && bun install",
-    "install:backend": "cd backend && uv sync",
+		"install:frontend": "cd frontend && bun install",
+		"install:backend": "cd backend && uv sync",
 
-    "test:frontend": "cd frontend && bun run test",
-    "test:backend": "cd backend && uv run pytest",
+		"test:frontend": "cd frontend && bun run test",
+		"test:backend": "cd backend && uv run pytest",
 
-    "build:frontend": "cd frontend && bun run build"
-  },
-  "devDependencies": {}
+		"build:frontend": "cd frontend && bun run build",
+		"build:backend": "cd backend && uv run fastapi run main.py"
+	},
+	"devDependencies": {}
 }
