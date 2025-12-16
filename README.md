@@ -29,29 +29,39 @@ stock-tracker-arg/
 
 ---
 
-## 🚀 Setup (En Desarrollo)
+## 🚀 Setup
 
 ### Prerrequisitos
 
-- Node.js 18+
-- Python 3.11+
-- Docker y Docker Compose
+- Node.js 18+ / Bun 1.0+
+- Python 3.14+
+- Docker y Docker Compose (próximamente)
 
 ### Instalación
 
-**Estado actual:** La estructura base del monorepo está lista.
+```bash
+# Instalar dependencias del backend
+bun run install:backend
 
-Cuando los issues #2 y #3 estén completos, podrás correr:
+# Instalar dependencias del frontend (cuando esté disponible)
+bun run install:frontend
+```
+
+### Desarrollo
 
 ```bash
-# Instalar dependencias
-npm run install:frontend
-npm run install:backend
+# Correr backend en desarrollo (✅ Disponible)
+bun run dev:backend    # http://localhost:8000
 
-# Desarrollo
-npm run dev:frontend    # Puerto 5173
-npm run dev:backend     # Puerto 8000
+# Correr frontend en desarrollo (⏳ Próximamente)
+bun run dev:frontend   # http://localhost:5173
 ```
+
+### Documentación API
+
+Una vez iniciado el backend, accede a:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
 ---
 
@@ -59,8 +69,52 @@ npm run dev:backend     # Puerto 8000
 
 | Script | Descripción | Estado |
 |--------|-------------|--------|
-| `npm run dev:frontend` | Corre frontend en desarrollo | ⏳ Requiere Issue #3 |
-| `npm run dev:backend` | Corre backend en desarrollo | ⏳ Requiere Issue #2 |
-| `npm run install:frontend` | Instala deps frontend | ⏳ Requiere Issue #3 |
-| `npm run install:backend` | Instala deps backend | ⏳ Requiere Issue #2 |
-| `npm run build:frontend` | Build de producción | ⏳ Requiere Issue #3 |
+| `bun run dev:backend` | Corre backend en desarrollo | ✅ Disponible |
+| `bun run build:backend` | Build de producción del backend | ✅ Disponible |
+| `bun run install:backend` | Instala deps backend | ✅ Disponible |
+| `bun run dev:frontend` | Corre frontend en desarrollo | ⏳ Requiere Issue #3 |
+| `bun run install:frontend` | Instala deps frontend | ⏳ Requiere Issue #3 |
+| `bun run build:frontend` | Build de producción | ⏳ Requiere Issue #3 |
+
+---
+
+## 🔧 Backend
+
+El backend está desarrollado con **FastAPI** siguiendo los principios de **Clean Architecture**.
+
+### Estructura
+
+```
+backend/
+├── domain/              # Lógica de negocio
+│   ├── entities/       
+│   ├── repositories/   
+│   ├── exceptions/     
+│   └── value_objects/  
+├── application/         # Casos de uso
+│   ├── use_cases/      
+│   ├── dtos/           
+│   └── interfaces/     
+├── infrastructure/      # Implementaciones
+│   ├── database/       
+│   ├── repositories/   
+│   └── services/       
+└── presentation/        # API REST
+    └── api/
+        ├── routes/     
+        ├── schemas/    
+        └── dependencies/
+```
+
+### Variables de entorno
+
+Copia el archivo `.env.example` a `.env` en el directorio `backend/`:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Edita las variables según tu configuración local.
+
+---
