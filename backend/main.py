@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 import logging
+from infrastructure.database.connection import init_db
+
 
 # Configurar logging
 logging.basicConfig(
@@ -18,6 +20,13 @@ app = FastAPI(
     description="Financial Platform",
     debug=os.getenv("DEBUG", "false").lower() in ("true", "1", "yes"),
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Initializing database connection...")
+    await init_db()
+
 
 origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 
@@ -36,15 +45,6 @@ async def root():
         "message": "Argentum API is running",
         "version": os.getenv("APP_VERSION", "0.1.0"),
         "status": "ok",
-    }
-
-
-@app.get("/health")
-async def health():
-    return {
-        "status": "healthy",
-        "environment": os.getenv("ENVIRONMENT", "development"),
-        "api_version": os.getenv("APP_VERSION", "0.1.0"),
     }
 
 
