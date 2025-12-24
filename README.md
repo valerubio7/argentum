@@ -35,15 +35,24 @@ stock-tracker-arg/
 
 - Node.js 18+ / Bun 1.0+
 - Python 3.14+
-- Docker y Docker Compose (próximamente)
+- Docker y Docker Compose
+- [uv](https://docs.astral.sh/uv/) - Python package manager
 
 ### Instalación
 
 ```bash
-# Instalar dependencias del backend
+# 1. Iniciar PostgreSQL con Docker
+docker compose up -d postgres
+
+# 2. Instalar dependencias del backend
 bun run install:backend
 
-# Instalar dependencias del frontend (cuando esté disponible)
+# 3. Configurar variables de entorno
+cd backend
+cp .env.example .env
+# Edita .env con tu configuración (por defecto funciona con Docker)
+
+# 4. Instalar dependencias del frontend (cuando esté disponible)
 bun run install:frontend
 ```
 
@@ -82,6 +91,14 @@ Una vez iniciado el backend, accede a:
 
 El backend está desarrollado con **FastAPI** siguiendo los principios de **Clean Architecture**.
 
+### Tecnologías
+
+- **Framework**: FastAPI
+- **ORM**: SQLAlchemy (async)
+- **Database Driver**: asyncpg
+- **Migrations**: Alembic (próximamente)
+- **Testing**: pytest + pytest-asyncio
+
 ### Estructura
 
 ```
@@ -96,7 +113,7 @@ backend/
 │   ├── dtos/           
 │   └── interfaces/     
 ├── infrastructure/      # Implementaciones
-│   ├── database/       
+│   ├── database/       # ✅ Conexión PostgreSQL configurada
 │   ├── repositories/   
 │   └── services/       
 └── presentation/        # API REST
@@ -106,15 +123,43 @@ backend/
         └── dependencies/
 ```
 
+### Base de Datos
+
+La aplicación usa **PostgreSQL** con **SQLAlchemy async**. La conexión se configura automáticamente al iniciar:
+
+```python
+# Conexión configurada en infrastructure/database/connection.py
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/argentum_db
+```
+
+**Características:**
+- ✅ Conexión async con asyncpg
+- ✅ Session management con dependency injection
+- ✅ Logs de conexión en startup
+- ✅ BaseModel con timestamps automáticos
+
 ### Variables de entorno
 
-Copia el archivo `.env.example` a `.env` en el directorio `backend/`:
+El archivo `.env.example` contiene todas las variables necesarias:
 
 ```bash
 cd backend
 cp .env.example .env
 ```
 
-Edita las variables según tu configuración local.
+**Variables principales:**
+
+```env
+# Database (configurado para Docker por defecto)
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/argentum_db
+
+# Server
+HOST=0.0.0.0
+PORT=8000
+DEBUG=True
+
+# CORS
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+```
 
 ---
