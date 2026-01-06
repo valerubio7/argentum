@@ -18,12 +18,49 @@ Sistema de tracking de cotizaciones de acciones argentinas con autenticación y 
 
 ## 📁 Estructura del Proyecto
 
-```plain text
-stock-tracker-arg/
-├── frontend/          # Aplicación React
-├── backend/           # API FastAPI
-├── package.json       # Workspace root
-├── .gitignore
+```
+ARGENTUM/
+├── frontend/                    # Aplicación React (próximamente)
+├── backend/                     # API FastAPI
+│   ├── domain/                  # Capa de dominio
+│   │   ├── entities/
+│   │   │   ├── base.py         # BaseEntity con UUID y timestamps
+│   │   │   └── user.py         # Entidad User
+│   │   ├── repositories/
+│   │   │   └── user_repository.py  # Interfaz UserRepository
+│   │   ├── exceptions/
+│   │   │   └── user_exceptions.py
+│   │   └── value_objects/
+│   │       ├── email.py        # Email value object
+│   │       └── password.py     # HashedPassword, PlainPassword
+│   ├── application/             # Casos de uso
+│   │   ├── use_cases/
+│   │   ├── dtos/
+│   │   └── interfaces/
+│   ├── infrastructure/          # Implementaciones
+│   │   ├── database/
+│   │   │   ├── connection.py   # Conexión async PostgreSQL
+│   │   │   └── models.py       # UserModel SQLAlchemy
+│   │   ├── repositories/
+│   │   │   └── postgres_user_repository.py  # Implementación PostgreSQL
+│   │   └── services/
+│   ├── presentation/            # API REST
+│   │   └── api/
+│   │       ├── routes/
+│   │       ├── schemas/
+│   │       └── dependencies/
+│   ├── alembic/                 # Migraciones de BD
+│   │   ├── versions/
+│   │   └── env.py
+│   ├── tests/                   # Tests unitarios
+│   │   ├── domain/
+│   │   │   └── test_user_entity.py
+│   │   └── infrastructure/
+│   │       └── test_postgres_user_repository.py
+│   ├── alembic.ini
+│   └── pyproject.toml
+├── docker-compose.yml
+├── package.json                 # Workspace root
 └── README.md
 ```
 
@@ -96,25 +133,51 @@ El backend está desarrollado con **FastAPI** siguiendo los principios de **Clea
 - **Framework**: FastAPI
 - **ORM**: SQLAlchemy (async)
 - **Database Driver**: asyncpg
-- **Migrations**: Alembic (próximamente)
+- **Migrations**: Alembic ✅
 - **Testing**: pytest + pytest-asyncio
+
+### Arquitectura
+
+El backend sigue los principios de **Clean Architecture / Arquitectura Hexagonal**, separando claramente las responsabilidades:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     PRESENTATION                            │
+│              (FastAPI routes, schemas)                      │
+├─────────────────────────────────────────────────────────────┤
+│                     APPLICATION                             │
+│              (Use cases, DTOs, interfaces)                  │
+├─────────────────────────────────────────────────────────────┤
+│                       DOMAIN                                │
+│         (Entities, Value Objects, Repository interfaces)    │
+├─────────────────────────────────────────────────────────────┤
+│                   INFRASTRUCTURE                            │
+│     (PostgreSQL, SQLAlchemy models, Repository impls)       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Principios:**
+- **Domain** no depende de ninguna otra capa
+- **Application** solo depende de Domain
+- **Infrastructure** implementa las interfaces definidas en Domain
+- **Presentation** orquesta todo usando dependency injection
 
 ### Estructura
 
 ```
 backend/
 ├── domain/              # Lógica de negocio
-│   ├── entities/       
-│   ├── repositories/   
-│   ├── exceptions/     
-│   └── value_objects/  
+│   ├── entities/        # User, BaseEntity
+│   ├── repositories/    # Interfaces (UserRepository)
+│   ├── exceptions/      # Excepciones de dominio
+│   └── value_objects/   # Email, HashedPassword
 ├── application/         # Casos de uso
 │   ├── use_cases/      
 │   ├── dtos/           
 │   └── interfaces/     
 ├── infrastructure/      # Implementaciones
-│   ├── database/       # ✅ Conexión PostgreSQL configurada
-│   ├── repositories/   
+│   ├── database/        # ✅ Conexión PostgreSQL + UserModel
+│   ├── repositories/    # ✅ PostgresUserRepository
 │   └── services/       
 └── presentation/        # API REST
     └── api/
@@ -125,18 +188,78 @@ backend/
 
 ### Base de Datos
 
-La aplicación usa **PostgreSQL** con **SQLAlchemy async**. La conexión se configura automáticamente al iniciar:
+La aplicación usa **PostgreSQL** con **SQLAlchemy async**. La conexión se configura automáticamente al iniciar.
 
-```python
-# Conexión configurada en infrastructure/database/connection.py
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/argentum_db
+#### Tabla `users`
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | UUID | Primary key |
+| `email` | VARCHAR(255) | Email único (índice único) |
+| `username` | VARCHAR(100) | Username único |
+| `hashed_password` | VARCHAR(255) | Contraseña hasheada |
+| `is_active` | BOOLEAN | Estado de la cuenta (default: true) |
+| `is_verified` | BOOLEAN | Email verificado (default: false) |
+| `created_at` | TIMESTAMP WITH TZ | Fecha de creación |
+| `updated_at` | TIMESTAMP WITH TZ | Última actualización |
+
+**Índices:**
+- `ix_users_email` - Índice único en email para búsquedas rápidas y unicidad
+- `ix_users_id` - Índice en id para búsquedas por primary key
+
+### Migraciones con Alembic
+
+Alembic está configurado para trabajar con SQLAlchemy async.
+
+```bash
+cd backend
+
+# Crear nueva migración automática
+uv run alembic revision --autogenerate -m "descripción del cambio"
+
+# Aplicar todas las migraciones pendientes
+uv run alembic upgrade head
+
+# Revertir última migración
+uv run alembic downgrade -1
+
+# Ver historial de migraciones
+uv run alembic history
+
+# Ver migración actual
+uv run alembic current
 ```
 
-**Características:**
-- ✅ Conexión async con asyncpg
-- ✅ Session management con dependency injection
-- ✅ Logs de conexión en startup
-- ✅ BaseModel con timestamps automáticos
+**Configuración:**
+- Las migraciones se guardan en `backend/alembic/versions/`
+- La URL de la base de datos se lee de la variable de entorno `DATABASE_URL`
+- El archivo `env.py` está configurado para async con `asyncpg`
+
+### Tests
+
+```bash
+cd backend
+
+# Ejecutar todos los tests
+uv run pytest
+
+# Ejecutar tests con verbose
+uv run pytest -v
+
+# Ejecutar solo tests de dominio
+uv run pytest tests/domain/ -v
+
+# Ejecutar solo tests de infraestructura
+uv run pytest tests/infrastructure/ -v
+
+# Ejecutar tests con coverage
+uv run pytest --cov=.
+```
+
+**Configuración de tests:**
+- Los tests usan SQLite en memoria por defecto (via `aiosqlite`)
+- Para usar PostgreSQL de test, configurar `TEST_DATABASE_URL`
+- Los fixtures compartidos están en `tests/conftest.py`
 
 ### Variables de entorno
 
@@ -153,6 +276,9 @@ cp .env.example .env
 # Database (configurado para Docker por defecto)
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/argentum_db
 
+# Database para tests (opcional, usa SQLite en memoria por defecto)
+TEST_DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/argentum_test_db
+
 # Server
 HOST=0.0.0.0
 PORT=8000
@@ -160,6 +286,11 @@ DEBUG=True
 
 # CORS
 CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+```
+
+**Formato de DATABASE_URL para async:**
+```
+postgresql+asyncpg://<user>:<password>@<host>:<port>/<database>
 ```
 
 ---
