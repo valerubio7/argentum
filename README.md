@@ -29,7 +29,8 @@ ARGENTUM/
 │   │   ├── repositories/
 │   │   │   └── user_repository.py  # Interfaz UserRepository
 │   │   ├── exceptions/
-│   │   │   └── user_exceptions.py
+│   │   │   ├── user_exceptions.py  # User domain errors
+│   │   │   └── token_exceptions.py # Token domain errors
 │   │   └── value_objects/
 │   │       ├── email.py        # Email value object
 │   │       └── password.py     # HashedPassword, PlainPassword
@@ -135,6 +136,7 @@ El backend está desarrollado con **FastAPI** siguiendo los principios de **Clea
 - **Database Driver**: asyncpg
 - **Migrations**: Alembic ✅
 - **Password Hashing**: bcrypt ✅
+- **JWT Authentication**: PyJWT ✅
 - **Testing**: pytest + pytest-asyncio
 
 ### Arquitectura
@@ -175,11 +177,11 @@ backend/
 ├── application/         # Casos de uso
 │   ├── use_cases/      
 │   ├── dtos/           
-│   └── interfaces/      # ✅ HashService (password hashing)
+│   └── interfaces/      # ✅ HashService, TokenService
 ├── infrastructure/      # Implementaciones
 │   ├── database/        # ✅ Conexión PostgreSQL + UserModel
 │   ├── repositories/    # ✅ PostgresUserRepository
-│   └── services/        # ✅ BcryptHashService
+│   └── services/        # ✅ BcryptHashService, JWTTokenService
 └── presentation/        # API REST
     └── api/
         ├── routes/     
@@ -210,6 +212,40 @@ is_valid = hash_service.verify_password("my_password", hashed)
 - ✅ Configurable número de rounds (default: 12)
 - ✅ Validación de formato bcrypt
 - ✅ Manejo de errores robusto
+
+#### TokenService (JWT)
+
+Servicio para generación y validación de tokens JWT para autenticación:
+
+```python
+from infrastructure.services import JWTTokenService
+from uuid import UUID
+
+token_service = JWTTokenService(
+    secret_key="your-secret-key",
+    algorithm="HS256",
+    access_token_expire_minutes=30
+)
+
+# Generate token
+user_id = UUID("...")
+token, expires_at = token_service.generate_token(user_id, "user@example.com")
+
+# Validate token
+payload = token_service.validate_token(token)
+# Returns: {"user_id": "...", "email": "user@example.com"}
+
+# Get token expiration
+expiration = token_service.get_token_expiration(token)
+```
+
+**Características:**
+- ✅ Generación de tokens JWT con PyJWT
+- ✅ Algoritmo HS256 (configurable)
+- ✅ Expiración configurable (default: 30 minutos)
+- ✅ Validación de tokens con manejo de expiración
+- ✅ Excepciones de dominio (ExpiredTokenError, InvalidTokenFormatError)
+- ✅ Recuperación de fecha de expiración
 
 ### Base de Datos
 
@@ -285,7 +321,7 @@ uv run pytest --cov=.
 - Los tests usan SQLite en memoria por defecto (via `aiosqlite`)
 - Para usar PostgreSQL de test, configurar `TEST_DATABASE_URL`
 - Los fixtures compartidos están en `tests/conftest.py`
-- **Total: 58 tests** (25 domain + 16 hash service + 17 repository)
+- **Total: 79 tests** (25 domain + 16 hash service + 21 JWT service + 17 repository)
 
 ### Variables de entorno
 
@@ -312,6 +348,11 @@ DEBUG=True
 
 # CORS
 CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# JWT Authentication
+JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
 **Formato de DATABASE_URL para async:**
