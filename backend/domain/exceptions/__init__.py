@@ -11,6 +11,12 @@ from domain.exceptions.user_exceptions import (
     InvalidUsernameError,
     InvalidEmailError,
 )
+from domain.exceptions.token_exceptions import (
+    TokenDomainError,
+    InvalidTokenError,
+    ExpiredTokenError,
+    InvalidTokenFormatError,
+)
 
 __all__ = [
     "UserDomainError",
@@ -22,4 +28,8 @@ __all__ = [
     "InvalidPasswordError",
     "InvalidUsernameError",
     "InvalidEmailError",
+    "TokenDomainError",
+    "InvalidTokenError",
+    "ExpiredTokenError",
+    "InvalidTokenFormatError",
 ]
