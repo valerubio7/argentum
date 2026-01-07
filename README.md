@@ -134,6 +134,7 @@ El backend está desarrollado con **FastAPI** siguiendo los principios de **Clea
 - **ORM**: SQLAlchemy (async)
 - **Database Driver**: asyncpg
 - **Migrations**: Alembic ✅
+- **Password Hashing**: bcrypt ✅
 - **Testing**: pytest + pytest-asyncio
 
 ### Arquitectura
@@ -174,17 +175,41 @@ backend/
 ├── application/         # Casos de uso
 │   ├── use_cases/      
 │   ├── dtos/           
-│   └── interfaces/     
+│   └── interfaces/      # ✅ HashService (password hashing)
 ├── infrastructure/      # Implementaciones
 │   ├── database/        # ✅ Conexión PostgreSQL + UserModel
 │   ├── repositories/    # ✅ PostgresUserRepository
-│   └── services/       
+│   └── services/        # ✅ BcryptHashService
 └── presentation/        # API REST
     └── api/
         ├── routes/     
         ├── schemas/    
         └── dependencies/
 ```
+
+### Servicios
+
+#### HashService (Bcrypt)
+
+Servicio para hashing seguro de passwords usando bcrypt:
+
+```python
+from infrastructure.services import BcryptHashService
+
+hash_service = BcryptHashService(rounds=12)
+
+# Hash password
+hashed = hash_service.hash_password("my_password")
+
+# Verify password
+is_valid = hash_service.verify_password("my_password", hashed)
+```
+
+**Características:**
+- ✅ Usa bcrypt con salt aleatorio
+- ✅ Configurable número de rounds (default: 12)
+- ✅ Validación de formato bcrypt
+- ✅ Manejo de errores robusto
 
 ### Base de Datos
 
@@ -260,6 +285,7 @@ uv run pytest --cov=.
 - Los tests usan SQLite en memoria por defecto (via `aiosqlite`)
 - Para usar PostgreSQL de test, configurar `TEST_DATABASE_URL`
 - Los fixtures compartidos están en `tests/conftest.py`
+- **Total: 58 tests** (25 domain + 16 hash service + 17 repository)
 
 ### Variables de entorno
 
