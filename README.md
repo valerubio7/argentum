@@ -35,9 +35,9 @@ ARGENTUM/
 │   │       ├── email.py        # Email value object
 │   │       └── password.py     # HashedPassword, PlainPassword
 │   ├── application/             # Casos de uso
-│   │   ├── use_cases/
-│   │   ├── dtos/
-│   │   └── interfaces/
+│   │   ├── use_cases/          # ✅ RegisterUser
+│   │   ├── dtos/               # ✅ RegisterUserDTO, UserResponseDTO
+│   │   └── interfaces/         # ✅ HashService, TokenService
 │   ├── infrastructure/          # Implementaciones
 │   │   ├── database/
 │   │   │   ├── connection.py   # Conexión async PostgreSQL
@@ -175,8 +175,8 @@ backend/
 │   ├── exceptions/      # Excepciones de dominio
 │   └── value_objects/   # Email, HashedPassword
 ├── application/         # Casos de uso
-│   ├── use_cases/      
-│   ├── dtos/           
+│   ├── use_cases/       # ✅ RegisterUser
+│   ├── dtos/            # ✅ RegisterUserDTO, UserResponseDTO, LoginDTO, TokenDTO
 │   └── interfaces/      # ✅ HashService, TokenService
 ├── infrastructure/      # Implementaciones
 │   ├── database/        # ✅ Conexión PostgreSQL + UserModel
@@ -190,6 +190,39 @@ backend/
 ```
 
 ### Servicios
+
+#### RegisterUser Use Case
+
+Caso de uso para el registro de nuevos usuarios:
+
+```python
+from application.use_cases import RegisterUser
+from application.dtos import RegisterUserDTO
+
+# Initialize use case
+register_user = RegisterUser(
+    user_repository=user_repo,
+    hash_service=hash_service
+)
+
+# Execute registration
+dto = RegisterUserDTO(
+    email="user@example.com",
+    password="SecurePassword123!",
+    username="newuser"
+)
+
+user_response = await register_user.execute(dto)
+# Returns: UserResponseDTO with id, email, username, is_active, is_verified, created_at
+```
+
+**Características:**
+- ✅ Validación de email único
+- ✅ Validación de username único
+- ✅ Hashing automático de contraseñas
+- ✅ Usuarios nuevos con is_verified=False
+- ✅ Logging de registros exitosos
+- ✅ Manejo de errores (UserAlreadyExistsError, ValueError)
 
 #### HashService (Bcrypt)
 
@@ -321,7 +354,7 @@ uv run pytest --cov=.
 - Los tests usan SQLite en memoria por defecto (via `aiosqlite`)
 - Para usar PostgreSQL de test, configurar `TEST_DATABASE_URL`
 - Los fixtures compartidos están en `tests/conftest.py`
-- **Total: 79 tests** (25 domain + 16 hash service + 21 JWT service + 17 repository)
+- **Total: 87 tests** (25 domain + 16 hash service + 21 JWT service + 17 repository + 8 application)
 
 ### Variables de entorno
 
