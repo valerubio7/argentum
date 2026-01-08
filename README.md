@@ -35,8 +35,8 @@ ARGENTUM/
 │   │       ├── email.py        # Email value object
 │   │       └── password.py     # HashedPassword, PlainPassword
 │   ├── application/             # Casos de uso
-│   │   ├── use_cases/          # ✅ RegisterUser
-│   │   ├── dtos/               # ✅ RegisterUserDTO, UserResponseDTO
+│   │   ├── use_cases/          # ✅ RegisterUser, LoginUser
+│   │   ├── dtos/               # ✅ RegisterUserDTO, UserResponseDTO, LoginDTO, TokenDTO
 │   │   └── interfaces/         # ✅ HashService, TokenService
 │   ├── infrastructure/          # Implementaciones
 │   │   ├── database/
@@ -175,7 +175,7 @@ backend/
 │   ├── exceptions/      # Excepciones de dominio
 │   └── value_objects/   # Email, HashedPassword
 ├── application/         # Casos de uso
-│   ├── use_cases/       # ✅ RegisterUser
+│   ├── use_cases/       # ✅ RegisterUser, LoginUser
 │   ├── dtos/            # ✅ RegisterUserDTO, UserResponseDTO, LoginDTO, TokenDTO
 │   └── interfaces/      # ✅ HashService, TokenService
 ├── infrastructure/      # Implementaciones
@@ -223,6 +223,39 @@ user_response = await register_user.execute(dto)
 - ✅ Usuarios nuevos con is_verified=False
 - ✅ Logging de registros exitosos
 - ✅ Manejo de errores (UserAlreadyExistsError, ValueError)
+
+#### LoginUser Use Case
+
+Caso de uso para autenticación de usuarios:
+
+```python
+from application.use_cases import LoginUser
+from application.dtos import LoginDTO
+
+# Initialize use case
+login_user = LoginUser(
+    user_repository=user_repo,
+    hash_service=hash_service,
+    token_service=token_service
+)
+
+# Execute login
+dto = LoginDTO(
+    email="user@example.com",
+    password="SecurePassword123!"
+)
+
+token_response = await login_user.execute(dto)
+# Returns: TokenDTO with access_token, token_type, expires_at
+```
+
+**Características:**
+- ✅ Verificación de email y password
+- ✅ Validación de usuario activo
+- ✅ Generación de JWT token
+- ✅ Logging de seguridad (intentos fallidos, usuarios inactivos, logins exitosos)
+- ✅ Mensajes de error genéricos (no revela si email o password es incorrecto)
+- ✅ Manejo de errores (InvalidCredentialsError, UserNotActiveError)
 
 #### HashService (Bcrypt)
 
@@ -354,7 +387,7 @@ uv run pytest --cov=.
 - Los tests usan SQLite en memoria por defecto (via `aiosqlite`)
 - Para usar PostgreSQL de test, configurar `TEST_DATABASE_URL`
 - Los fixtures compartidos están en `tests/conftest.py`
-- **Total: 87 tests** (25 domain + 16 hash service + 21 JWT service + 17 repository + 8 application)
+- **Total: 96 tests** (25 domain + 16 hash service + 21 JWT service + 17 repository + 8 register + 9 login)
 
 ### Variables de entorno
 
