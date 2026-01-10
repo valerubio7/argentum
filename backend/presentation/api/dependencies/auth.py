@@ -12,7 +12,7 @@ from application.interfaces.token_service import TokenService
 from application.use_cases.login_user import LoginUser
 from application.use_cases.register_user import RegisterUser
 from domain.entities.user import User
-from domain.exceptions.token_exceptions import InvalidTokenError, TokenDomainError
+from domain.exceptions.token_exceptions import TokenDomainError
 from domain.repositories.user_repository import UserRepository
 from infrastructure.database.connection import get_db
 from infrastructure.repositories.postgres_user_repository import PostgresUserRepository

@@ -1,10 +1,8 @@
 """Integration tests for authentication endpoints."""
 
 import os
-import uuid
 import pytest
 import pytest_asyncio
-from datetime import datetime, timedelta, timezone
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -23,7 +21,6 @@ async def test_engine():
     # Import after DATABASE_URL is set in conftest
     from infrastructure.database.connection import Base
     from sqlalchemy import text
-    import os
 
     # Use the same DATABASE_URL that was set in conftest
     db_url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
