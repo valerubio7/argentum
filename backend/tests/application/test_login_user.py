@@ -251,7 +251,7 @@ class TestLoginUser:
             await login_user_use_case.execute(valid_login_dto)
 
         # Assert: Both should raise the same generic error
-        assert type(exc_info_email.value) == type(exc_info_password.value)
+        assert isinstance(exc_info_email.value, type(exc_info_password.value))
         # Error messages should be generic and the same for both cases
         assert str(exc_info_email.value) == str(exc_info_password.value)
         assert str(exc_info_email.value) == "Invalid email or password"
