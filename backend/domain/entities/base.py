@@ -32,7 +32,7 @@ class BaseEntity:
 
     def _update_timestamp(self) -> None:
         """Update the updated_at timestamp."""
-        self._updated_at = datetime.now(timezone.utc)
+        self._updated_at = datetime.utcnow()
 
     def __eq__(self, other: object) -> bool:
         """Two entities are equal if they have the same ID."""
