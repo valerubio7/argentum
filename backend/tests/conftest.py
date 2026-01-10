@@ -1,8 +1,20 @@
 """Shared test fixtures."""
 
 import os
-import sys
 import tempfile
+
+import pytest
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from domain.entities.user import User
+from domain.value_objects.email import Email
+from domain.value_objects.password import HashedPassword
+from infrastructure.database.connection import Base
+from infrastructure.database.models import (
+    UserModel,
+)  # Import to register model with SQLAlchemy metadata
 
 # CRITICAL: Set DATABASE_URL before importing any application modules
 # Use a file-based SQLite database instead of in-memory to allow sharing between engines
@@ -12,18 +24,8 @@ _test_db_file.close()
 TEST_DB_PATH = _test_db_file.name
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{TEST_DB_PATH}"
 
-import pytest
-import pytest_asyncio
-from uuid import uuid4
-
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.pool import StaticPool
-
-from domain.entities.user import User
-from domain.value_objects.email import Email
-from domain.value_objects.password import HashedPassword
-from infrastructure.database.connection import Base
-from infrastructure.database.models import UserModel  # noqa: F401
+# Ensure model is registered with SQLAlchemy metadata
+_ = UserModel
 
 
 # Use in-memory SQLite for tests or test PostgreSQL database
