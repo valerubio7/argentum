@@ -2,7 +2,7 @@
 
 Sistema de tracking de cotizaciones de acciones argentinas con autenticación y dashboard en tiempo real.
 
-> **⚠️ Proyecto en desarrollo activo - Setup en progreso**
+> **✅ Backend funcional con autenticación JWT y 113 tests pasando**
 
 ---
 
@@ -110,6 +110,25 @@ Una vez iniciado el backend, accede a:
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
+#### Endpoints disponibles
+
+##### Autenticación (`/api/auth`)
+
+- **POST /api/auth/register** - Registrar nuevo usuario
+  - Body: `{ "email": "user@example.com", "password": "SecurePass123!", "username": "john_doe" }`
+  - Response 201: `{ "id": "uuid", "email": "...", "username": "...", "is_active": true, "is_verified": false, "created_at": "..." }`
+  - Errors: 400 (duplicate email/username), 422 (validation error)
+
+- **POST /api/auth/login** - Iniciar sesión
+  - Body: `{ "email": "user@example.com", "password": "SecurePass123!" }`
+  - Response 200: `{ "access_token": "jwt_token", "token_type": "bearer", "expires_at": "..." }`
+  - Errors: 401 (invalid credentials), 403 (inactive user)
+
+- **GET /api/auth/me** - Obtener usuario actual (requiere autenticación)
+  - Headers: `Authorization: Bearer <token>`
+  - Response 200: `{ "id": "uuid", "email": "...", "username": "...", "is_active": true, "is_verified": false, "created_at": "..." }`
+  - Errors: 401 (invalid/expired token), 404 (user not found)
+
 ---
 
 ## 📝 Scripts Disponibles
@@ -119,6 +138,7 @@ Una vez iniciado el backend, accede a:
 | `bun run dev:backend` | Corre backend en desarrollo | ✅ Disponible |
 | `bun run build:backend` | Build de producción del backend | ✅ Disponible |
 | `bun run install:backend` | Instala deps backend | ✅ Disponible |
+| `bun run test:backend` | Ejecuta tests del backend | ✅ 113 tests |
 | `bun run dev:frontend` | Corre frontend en desarrollo | ⏳ Requiere Issue #3 |
 | `bun run install:frontend` | Instala deps frontend | ⏳ Requiere Issue #3 |
 | `bun run build:frontend` | Build de producción | ⏳ Requiere Issue #3 |
@@ -133,11 +153,13 @@ El backend está desarrollado con **FastAPI** siguiendo los principios de **Clea
 
 - **Framework**: FastAPI
 - **ORM**: SQLAlchemy (async)
-- **Database Driver**: asyncpg
+- **Database Driver**: asyncpg (PostgreSQL), aiosqlite (tests)
 - **Migrations**: Alembic ✅
 - **Password Hashing**: bcrypt ✅
 - **JWT Authentication**: PyJWT ✅
-- **Testing**: pytest + pytest-asyncio
+- **Configuration**: pydantic-settings ✅
+- **Testing**: pytest + pytest-asyncio + httpx
+- **Code Quality**: ruff (linter + formatter)
 
 ### Arquitectura
 
@@ -165,6 +187,53 @@ El backend sigue los principios de **Clean Architecture / Arquitectura Hexagonal
 - **Infrastructure** implementa las interfaces definidas en Domain
 - **Presentation** orquesta todo usando dependency injection
 
+### Sistema de Autenticación
+
+El backend implementa un sistema completo de autenticación JWT con las siguientes características:
+
+#### Funcionalidades Implementadas ✅
+
+- **Registro de usuarios** (`POST /api/auth/register`)
+  - Validación de email único y formato válido
+  - Validación de username único (3-50 caracteres)
+  - Validación de password (mínimo 8 caracteres)
+  - Hash seguro de contraseñas con bcrypt (12 rounds)
+  - Usuarios nuevos creados como no verificados
+
+- **Login de usuarios** (`POST /api/auth/login`)
+  - Autenticación con email y password
+  - Verificación de usuario activo
+  - Generación de JWT token con expiración configurable (default: 30 min)
+  - Mensajes de error genéricos para prevenir enumeración de usuarios
+  - Logging de seguridad (intentos fallidos, usuarios inactivos)
+
+- **Autenticación con JWT** (`GET /api/auth/me`)
+  - Validación de tokens JWT en cada request
+  - Verificación de expiración de tokens
+  - Verificación de usuario activo
+  - Acceso a información del usuario autenticado
+
+#### Seguridad
+
+- Passwords hasheados con bcrypt (12 rounds configurables)
+- Tokens JWT firmados con HS256 (algoritmo configurable)
+- Secret key configurable via variables de entorno
+- Validación de formato de tokens y payload
+- Manejo apropiado de tokens expirados
+- Status codes HTTP correctos (401, 403, 400)
+- Headers WWW-Authenticate en respuestas 401
+
+#### Testing
+
+- **113 tests totales** con 100% de cobertura en autenticación:
+  - 25 tests de entidades de dominio
+  - 16 tests de hash service (bcrypt)
+  - 21 tests de token service (JWT)
+  - 17 tests de repositorio de usuarios
+  - 8 tests de caso de uso de registro
+  - 9 tests de caso de uso de login
+  - 17 tests de integración de endpoints
+
 ### Estructura
 
 ```
@@ -183,10 +252,11 @@ backend/
 │   ├── repositories/    # ✅ PostgresUserRepository
 │   └── services/        # ✅ BcryptHashService, JWTTokenService
 └── presentation/        # API REST
+    ├── config.py        # ✅ Settings con pydantic-settings
     └── api/
-        ├── routes/     
-        ├── schemas/    
-        └── dependencies/
+        ├── routes/      # ✅ auth.py
+        ├── schemas/     # ✅ auth_schemas.py
+        └── dependencies/ # ✅ auth.py (dependency injection)
 ```
 
 ### Servicios
@@ -384,10 +454,12 @@ uv run pytest --cov=.
 ```
 
 **Configuración de tests:**
-- Los tests usan SQLite en memoria por defecto (via `aiosqlite`)
+- Los tests usan SQLite file-based para testing (via `aiosqlite`)
+- El archivo temporal se comparte entre test engine y app engine
 - Para usar PostgreSQL de test, configurar `TEST_DATABASE_URL`
 - Los fixtures compartidos están en `tests/conftest.py`
-- **Total: 96 tests** (25 domain + 16 hash service + 21 JWT service + 17 repository + 8 register + 9 login)
+- **Total: 113 tests** (25 domain + 16 hash service + 21 JWT service + 17 repository + 8 register + 9 login + 17 integration)
+- **Tests de integración**: 16 tests para endpoints de autenticación (register, login, get current user)
 
 ### Variables de entorno
 
@@ -419,6 +491,9 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
 JWT_ALGORITHM=HS256
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Password Hashing
+BCRYPT_ROUNDS=12
 ```
 
 **Formato de DATABASE_URL para async:**
