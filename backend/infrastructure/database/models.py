@@ -1,7 +1,7 @@
 """SQLAlchemy models."""
 
 from datetime import datetime
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import Boolean, String, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
@@ -16,7 +16,7 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True), primary_key=True, index=True
+        PG_UUID(as_uuid=True), primary_key=True, index=True, default=uuid4
     )
     email: Mapped[str] = mapped_column(
         String(255), unique=True, index=True, nullable=False
