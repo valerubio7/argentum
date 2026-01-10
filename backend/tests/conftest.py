@@ -1,6 +1,17 @@
 """Shared test fixtures."""
 
 import os
+import sys
+import tempfile
+
+# CRITICAL: Set DATABASE_URL before importing any application modules
+# Use a file-based SQLite database instead of in-memory to allow sharing between engines
+# Create a temporary file for the test database
+_test_db_file = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+_test_db_file.close()
+TEST_DB_PATH = _test_db_file.name
+os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{TEST_DB_PATH}"
+
 import pytest
 import pytest_asyncio
 from uuid import uuid4
@@ -17,6 +28,25 @@ from infrastructure.database.models import UserModel  # noqa: F401
 
 # Use in-memory SQLite for tests or test PostgreSQL database
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+
+
+def pytest_configure(config):
+    """Configure pytest - runs before test collection."""
+    # Ensure DATABASE_URL is set before any modules are imported
+    os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{TEST_DB_PATH}"
+
+
+def pytest_unconfigure(config):
+    """Clean up after all tests."""
+    # Remove temporary database file
+    import time
+
+    time.sleep(0.1)  # Give time for connections to close
+    if os.path.exists(TEST_DB_PATH):
+        try:
+            os.remove(TEST_DB_PATH)
+        except Exception:
+            pass  # Ignore errors during cleanup
 
 
 @pytest.fixture
