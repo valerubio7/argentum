@@ -8,6 +8,15 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 
+# CRITICAL: Set DATABASE_URL BEFORE importing any application modules
+# Use a file-based SQLite database instead of in-memory to allow sharing between engines
+# Create a temporary file for the test database
+_test_db_file = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+_test_db_file.close()
+TEST_DB_PATH = _test_db_file.name
+os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{TEST_DB_PATH}"
+
+# NOW import application modules (after DATABASE_URL is set)
 from domain.entities.user import User
 from domain.value_objects.email import Email
 from domain.value_objects.password import HashedPassword
@@ -15,14 +24,6 @@ from infrastructure.database.connection import Base
 from infrastructure.database.models import (
     UserModel,
 )  # Import to register model with SQLAlchemy metadata
-
-# CRITICAL: Set DATABASE_URL before importing any application modules
-# Use a file-based SQLite database instead of in-memory to allow sharing between engines
-# Create a temporary file for the test database
-_test_db_file = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-_test_db_file.close()
-TEST_DB_PATH = _test_db_file.name
-os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{TEST_DB_PATH}"
 
 # Ensure model is registered with SQLAlchemy metadata
 _ = UserModel

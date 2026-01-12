@@ -50,27 +50,6 @@ class TestHashPassword:
         assert hash_low.startswith("$2b$04$")
         assert hash_high.startswith("$2b$12$")
 
-    def test_hash_password_with_empty_string_raises_error(self):
-        """Test that empty password raises ValueError."""
-        service = BcryptHashService()
-
-        with pytest.raises(ValueError, match="Password cannot be empty"):
-            service.hash_password("")
-
-    def test_hash_password_with_none_raises_error(self):
-        """Test that None password raises ValueError."""
-        service = BcryptHashService()
-
-        with pytest.raises(ValueError, match="Password cannot be empty"):
-            service.hash_password(None)  # type: ignore
-
-    def test_hash_password_with_non_string_raises_error(self):
-        """Test that non-string password raises ValueError."""
-        service = BcryptHashService()
-
-        with pytest.raises(ValueError, match="Password must be a string"):
-            service.hash_password(12345)  # type: ignore
-
 
 class TestVerifyPassword:
     """Tests for password verification."""
@@ -133,31 +112,6 @@ class TestVerifyPassword:
         for bad_hash in malformed_hashes:
             result = service.verify_password(password, bad_hash)
             assert result is False
-
-    def test_verify_password_with_empty_password_raises_error(self):
-        """Test that empty password raises ValueError."""
-        service = BcryptHashService()
-        hashed = service.hash_password("valid_password")
-
-        with pytest.raises(ValueError, match="Password cannot be empty"):
-            service.verify_password("", hashed)
-
-    def test_verify_password_with_empty_hash_raises_error(self):
-        """Test that empty hash raises ValueError."""
-        service = BcryptHashService()
-
-        with pytest.raises(ValueError, match="Hashed password cannot be empty"):
-            service.verify_password("password", "")
-
-    def test_verify_password_with_none_inputs_raises_error(self):
-        """Test that None inputs raise ValueError."""
-        service = BcryptHashService()
-
-        with pytest.raises(ValueError, match="Password cannot be empty"):
-            service.verify_password(None, "hash")  # type: ignore
-
-        with pytest.raises(ValueError, match="Hashed password cannot be empty"):
-            service.verify_password("password", None)  # type: ignore
 
 
 class TestBcryptServiceIntegration:

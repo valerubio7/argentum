@@ -1,6 +1,7 @@
 """Integration tests for authentication endpoints."""
 
 import os
+import tempfile
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
@@ -15,18 +16,22 @@ from sqlalchemy.pool import StaticPool
 async def test_engine():
     """Create test database engine with SQLite file.
 
-    Uses the same SQLite file as the app's connection to ensure
-    both engines access the same database.
+    Each test gets its own isolated SQLite database file to ensure
+    complete independence from other tests.
     """
     # Import after DATABASE_URL is set in conftest
     from infrastructure.database.connection import Base
     from sqlalchemy import text
 
-    # Use the same DATABASE_URL that was set in conftest
-    db_url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+    # Create a NEW temporary database file for each test
+    # This ensures complete isolation regardless of execution order
+    test_db_file = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    test_db_file.close()
+    test_db_path = test_db_file.name
+    test_db_url = f"sqlite+aiosqlite:///{test_db_path}"
 
     engine = create_async_engine(
-        db_url,
+        test_db_url,
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
         echo=False,
@@ -38,12 +43,18 @@ async def test_engine():
 
     yield engine
 
-    # Cleanup: delete all data and drop tables
-    async with engine.begin() as conn:
-        await conn.execute(text("DELETE FROM users"))
-        await conn.run_sync(Base.metadata.drop_all)
-
+    # Cleanup: dispose engine and delete temp file
     await engine.dispose()
+
+    # Remove temporary database file
+    import time
+
+    time.sleep(0.1)  # Give time for connections to close
+    if os.path.exists(test_db_path):
+        try:
+            os.remove(test_db_path)
+        except Exception:
+            pass  # Ignore errors during cleanup
 
 
 @pytest_asyncio.fixture
@@ -53,12 +64,32 @@ async def test_session_factory(test_engine):
 
 
 @pytest_asyncio.fixture
-async def client(test_session_factory):
-    """Create test client with database override."""
+async def client(test_engine, test_session_factory, monkeypatch):
+    """Create test client with database override.
 
-    # Import locally to ensure DATABASE_URL is set first
+    This fixture ensures complete isolation by:
+    1. Replacing the global engine in connection module with test_engine
+    2. Overriding FastAPI's get_db dependency to use test sessions
+    """
+    import sys
+
+    # CRITICAL: Replace the engine in the connection module BEFORE importing main
+    # This ensures that even if connection.py was already imported by other tests,
+    # we use our test engine
+    if "infrastructure.database.connection" in sys.modules:
+        connection_module = sys.modules["infrastructure.database.connection"]
+        # Store original engine to restore later
+        original_engine = connection_module.engine
+        original_sessionmaker = connection_module.AsyncSessionLocal
+        # Replace with test engine
+        monkeypatch.setattr(connection_module, "engine", test_engine)
+        monkeypatch.setattr(
+            connection_module, "AsyncSessionLocal", test_session_factory
+        )
+
+    # Now safe to import main
     from main import app
-    from infrastructure.database.connection import get_db, init_db, engine
+    from infrastructure.database.connection import get_db
 
     # Override function that will be called by FastAPI
     async def override_get_db():
@@ -68,9 +99,7 @@ async def client(test_session_factory):
     # Override the dependency
     app.dependency_overrides[get_db] = override_get_db
 
-    # Initialize database tables - this will use the SQLite in-memory DB
-    # set by conftest.py
-    await init_db()
+    # NOTE: Don't call init_db() here - tables are already created by test_engine fixture
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -78,9 +107,6 @@ async def client(test_session_factory):
 
     # Clean up override
     app.dependency_overrides.clear()
-
-    # Dispose the application's engine to close all connections
-    await engine.dispose()
 
 
 @pytest_asyncio.fixture
