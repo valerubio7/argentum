@@ -1,6 +1,7 @@
 """FastAPI dependencies for dependency injection."""
 
 from collections.abc import AsyncGenerator
+from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -20,10 +21,6 @@ from infrastructure.services.hash_service import BcryptHashService
 from infrastructure.services.jwt_token_service import JWTTokenService
 from presentation.config import settings
 
-# Global instances
-_hash_service: HashService | None = None
-_token_service: TokenService | None = None
-
 # Security
 security = HTTPBearer()
 
@@ -41,24 +38,20 @@ async def get_user_repository(
     return PostgresUserRepository(session)
 
 
+@lru_cache
 def get_hash_service() -> HashService:
-    """Get hash service dependency."""
-    global _hash_service
-    if _hash_service is None:
-        _hash_service = BcryptHashService(rounds=settings.bcrypt_rounds)
-    return _hash_service
+    """Get hash service dependency (singleton)."""
+    return BcryptHashService(rounds=settings.bcrypt_rounds)
 
 
+@lru_cache
 def get_token_service() -> TokenService:
-    """Get token service dependency."""
-    global _token_service
-    if _token_service is None:
-        _token_service = JWTTokenService(
-            secret_key=settings.jwt_secret_key,
-            algorithm=settings.jwt_algorithm,
-            access_token_expire_minutes=settings.jwt_access_token_expire_minutes,
-        )
-    return _token_service
+    """Get token service dependency (singleton)."""
+    return JWTTokenService(
+        secret_key=settings.jwt_secret_key,
+        algorithm=settings.jwt_algorithm,
+        access_token_expire_minutes=settings.jwt_access_token_expire_minutes,
+    )
 
 
 async def get_register_user_use_case(

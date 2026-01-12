@@ -6,6 +6,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings."""
 
+    # App
+    app_name: str = "Argentum"
+    app_version: str = "0.1.0"
+    environment: str = "development"
+    debug: bool = False
+    host: str = "0.0.0.0"
+    port: int = 8000
+
     # Database
     database_url: str = "postgresql+asyncpg://user:password@localhost/argentum"
 
@@ -17,15 +25,22 @@ class Settings(BaseSettings):
     # Security
     bcrypt_rounds: int = 12
 
+    # CORS
+    cors_origins: str = "http://localhost:5173,http://localhost:3000"
+
     # API
     api_prefix: str = "/api/v1"
-    debug: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",  # Ignore extra fields from .env
     )
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Parse CORS origins string to list."""
+        return [origin.strip() for origin in self.cors_origins.split(",")]
 
 
 settings = Settings()
