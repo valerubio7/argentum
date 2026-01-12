@@ -10,6 +10,9 @@ from domain.repositories.user_repository import UserRepository
 from domain.value_objects.email import Email
 from domain.value_objects.password import HashedPassword
 from infrastructure.database.models import UserModel
+from infrastructure.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class PostgresUserRepository(UserRepository):
@@ -75,10 +78,22 @@ class PostgresUserRepository(UserRepository):
         Raises:
             UserAlreadyExistsError: If email or username already exists.
         """
+        logger.info(
+            "user_save_initiated",
+            user_id=str(user.id),
+            email=user.email.value,
+            username=user.username,
+        )
         model = self._to_model(user)
         self._session.add(model)
         await self._session.flush()
         await self._session.refresh(model)
+        logger.info(
+            "user_save_success",
+            user_id=str(user.id),
+            email=user.email.value,
+            username=user.username,
+        )
         return self._to_entity(model)
 
     async def find_by_id(self, user_id: UUID) -> User | None:
