@@ -33,7 +33,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Log error details for debugging
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     this.setState({
       error,
       errorInfo,
@@ -81,7 +81,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             <p className="text-gray-600 text-center mb-6">
               An unexpected error occurred. Please try again.
             </p>
-            
+
             {import.meta.env.DEV && this.state.error && (
               <details className="mb-4">
                 <summary className="cursor-pointer text-sm text-gray-700 font-medium mb-2">

@@ -43,10 +43,10 @@ export function useCurrentUser() {
         throw new Error('No token available')
       }
       const user = await authApi.getCurrentUser(token)
-      
+
       // Update store when user data is fetched successfully (side effect)
       setUser(user)
-      
+
       return user
     },
     enabled: !!token, // Only run if token exists

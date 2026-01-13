@@ -1,0 +1,267 @@
+# === GIT & VERSION CONTROL ===
+.git
+.gitignore
+.gitattributes
+.github/
+.gitlab-ci.yml
+.gitmodules
+
+# === DOCUMENTATION ===
+README.md
+LICENSE
+CHANGELOG.md
+CONTRIBUTING.md
+DOCS.md
+docs/
+*.md
+!backend/README.md
+!frontend/README.md
+
+# === PYTHON ===
+
+# Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+pyvenv.cfg
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+dist/
+build/
+wheels/
+*.whl
+.eggs/
+parts/
+bin/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Testing
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+.hypothesis/
+.nox/
+junit.xml
+coverage.xml
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Linting
+.ruff_cache/
+.pylint.d/
+
+# UV package manager
+.uv/
+uv.lock
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# === FRONTEND / NODE ===
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+frontend/dist/
+frontend/dist-ssr/
+frontend/build/
+frontend/out/
+
+# Testing
+frontend/coverage/
+frontend/.nyc_output/
+frontend/junit.xml
+
+# Storybook
+frontend/storybook-static/
+
+# Vite
+frontend/.vite/
+frontend/vite.config.*.timestamp*
+
+# TypeScript
+*.tsbuildinfo
+.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+lerna-debug.log*
+
+# === ENVIRONMENT & CONFIG ===
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.*.local
+!.env.example
+!.env.template
+
+# Docker
+.dockerignore
+Dockerfile.dev
+docker-compose*.yml
+!docker-compose.yml
+.docker/
+
+# === IDEs & EDITORS ===
+
+# VSCode
+.vscode/
+*.code-workspace
+.history/
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
+*.swp
+*.swo
+*~
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+.emacs.desktop
+.emacs.desktop.lock
+
+# Sublime
+*.sublime-workspace
+*.sublime-project
+
+# === OS FILES ===
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+
+# Windows
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.stackdump
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+# === DATABASE ===
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# PostgreSQL
+*.pgsql
+*.dump
+
+# Data folders
+data/
+pgdata/
+postgres-data/
+
+# === LOGS ===
+
+*.log
+logs/
+pip-log.txt
+
+# === TEMP & CACHE ===
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.cache
+
+# === CERTIFICATES & SECRETS ===
+
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.jks
+
+# === CI/CD ===
+
+.circleci/
+.travis.yml
+.gitlab-ci.yml
+.github/
+Jenkinsfile
+azure-pipelines.yml
+
+# === SCRIPTS ===
+
+backend/scripts/
+frontend/scripts/
+*.sh
+*.bat
+*.ps1
+
+# === MISC ===
+
+# Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip

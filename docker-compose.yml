@@ -1,17 +1,116 @@
+version: '3.8'
+
 services:
+  # PostgreSQL Database
   postgres:
-    image: postgres:18.1
+    image: postgres:16-alpine
     container_name: argentum-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: argentum
+      POSTGRES_PASSWORD: argentum123
       POSTGRES_DB: argentum_db
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U argentum"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - argentum-network
+
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: argentum-backend
+    restart: unless-stopped
+    environment:
+      # Application
+      APP_NAME: Argentum
+      APP_VERSION: 0.1.0
+      ENVIRONMENT: development
+      DEBUG: "True"
+
+      # Server
+      HOST: 0.0.0.0
+      PORT: 8000
+
+      # Database
+      DATABASE_URL: postgresql+asyncpg://argentum:argentum123@postgres:5432/argentum_db
+
+      # Database Pool
+      DB_POOL_SIZE: 5
+      DB_MAX_OVERFLOW: 10
+      DB_POOL_TIMEOUT: 30
+      DB_POOL_RECYCLE: 3600
+
+      # JWT
+      JWT_SECRET_KEY: dev-secret-key-change-in-production-use-openssl-rand-hex-32
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 30
+
+      # CORS
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - backend_cache:/app/.venv
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        sleep 2 &&
+        echo 'Running migrations...' &&
+        uv run alembic upgrade head &&
+        echo 'Starting server...' &&
+        uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    networks:
+      - argentum-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Frontend (React + Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: argentum-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: bun run dev --host 0.0.0.0
+    networks:
+      - argentum-network
 
 volumes:
   postgres_data:
+    name: argentum-postgres-data
     driver: local
+  backend_cache:
+    name: argentum-backend-cache
+    driver: local
+
+networks:
+  argentum-network:
+    name: argentum-network
+    driver: bridge

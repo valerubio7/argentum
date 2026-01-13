@@ -3,13 +3,13 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 // Lazy load pages for code splitting
-const LoginPage = lazy(() => 
+const LoginPage = lazy(() =>
   import('./features/auth').then(module => ({ default: module.LoginPage }))
 )
-const RegisterPage = lazy(() => 
+const RegisterPage = lazy(() =>
   import('./features/auth').then(module => ({ default: module.RegisterPage }))
 )
-const DashboardPage = lazy(() => 
+const DashboardPage = lazy(() =>
   import('./pages/DashboardPage').then(module => ({ default: module.DashboardPage }))
 )
 

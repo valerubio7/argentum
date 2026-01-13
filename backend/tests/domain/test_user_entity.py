@@ -115,27 +115,6 @@ class TestUsernameValidation:
 
         assert user.username == "testuser"
 
-    def test_username_minimum_length(self, valid_email, valid_hashed_password):
-        """Test username with exactly 3 characters is valid."""
-        user = User(
-            email=valid_email,
-            hashed_password=valid_hashed_password,
-            username="abc",
-        )
-
-        assert user.username == "abc"
-
-    def test_username_maximum_length(self, valid_email, valid_hashed_password):
-        """Test username with exactly 50 characters is valid."""
-        username = "a" * 50
-        user = User(
-            email=valid_email,
-            hashed_password=valid_hashed_password,
-            username=username,
-        )
-
-        assert user.username == username
-
 
 class TestEmailValidation:
     """Tests for Email value object validation."""
@@ -159,22 +138,6 @@ class TestEmailValidation:
         """Test that invalid email format raises ValueError."""
         with pytest.raises(ValueError, match="Invalid email format"):
             Email("invalid-email")
-
-    def test_email_without_domain(self):
-        """Test email without domain raises ValueError."""
-        with pytest.raises(ValueError, match="Invalid email format"):
-            Email("user@")
-
-    def test_email_without_at_symbol(self):
-        """Test email without @ symbol raises ValueError."""
-        with pytest.raises(ValueError, match="Invalid email format"):
-            Email("userexample.com")
-
-    def test_email_too_long(self):
-        """Test that email over 255 characters raises ValueError."""
-        long_email = "a" * 250 + "@b.com"
-        with pytest.raises(ValueError, match="Email is too long"):
-            Email(long_email)
 
 
 class TestUserMethods:

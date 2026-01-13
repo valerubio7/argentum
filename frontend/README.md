@@ -209,14 +209,14 @@ import { useLogin } from '@/features/auth'
 
 const LoginComponent = () => {
   const { mutate: login, isPending, isError } = useLogin()
-  
+
   const handleLogin = (data: LoginRequest) => {
     login(data, {
       onSuccess: () => navigate('/dashboard'),
       onError: (error) => console.error(error)
     })
   }
-  
+
   return // ...
 }
 ```
@@ -227,13 +227,13 @@ import { useRegister } from '@/features/auth'
 
 const RegisterComponent = () => {
   const { mutate: register, isPending } = useRegister()
-  
+
   const handleRegister = (data: RegisterRequest) => {
     register(data, {
       onSuccess: () => navigate('/login')
     })
   }
-  
+
   return // ...
 }
 ```
@@ -244,10 +244,10 @@ import { useCurrentUser } from '@/features/auth'
 
 const ProfileComponent = () => {
   const { data: user, isLoading, isError } = useCurrentUser()
-  
+
   if (isLoading) return <div>Loading...</div>
   if (isError) return <div>Error loading user</div>
-  
+
   return <div>Welcome {user.username}</div>
 }
 ```
@@ -258,7 +258,7 @@ import { useLogout } from '@/features/auth'
 
 const NavBar = () => {
   const logout = useLogout()
-  
+
   return <button onClick={logout}>Logout</button>
 }
 ```

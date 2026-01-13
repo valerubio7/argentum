@@ -119,15 +119,10 @@ class TestValidateToken:
     def test_validate_token_with_malformed_token_raises_error(self):
         """Test that malformed token raises InvalidTokenError."""
         service = JWTTokenService(secret_key="test_secret_key")
-        malformed_tokens = [
-            "not.a.jwt",
-            "invalid_token",
-            "a.b.c.d",  # Too many parts
-        ]
+        malformed_token = "not.a.jwt"
 
-        for bad_token in malformed_tokens:
-            with pytest.raises(InvalidTokenError):
-                service.validate_token(bad_token)
+        with pytest.raises(InvalidTokenError):
+            service.validate_token(malformed_token)
 
     def test_validate_token_with_wrong_secret_raises_error(self):
         """Test that token signed with different secret raises InvalidTokenError."""

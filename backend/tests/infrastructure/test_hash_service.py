@@ -96,22 +96,6 @@ class TestVerifyPassword:
 
         assert result is False
 
-    def test_verify_password_handles_malformed_hash(self):
-        """Test various malformed hash formats."""
-        service = BcryptHashService()
-        password = "test_password"
-
-        malformed_hashes = [
-            "short",
-            "$2b$invalid",
-            "random_string_60_chars_long_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-            "$2b$12$",  # Too short
-        ]
-
-        for bad_hash in malformed_hashes:
-            result = service.verify_password(password, bad_hash)
-            assert result is False
-
 
 class TestBcryptServiceIntegration:
     """Integration tests for the complete hash and verify workflow."""

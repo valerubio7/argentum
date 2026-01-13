@@ -12,7 +12,6 @@ from infrastructure.database.connection import Base
 
 # Import all models for autogenerate support
 # This ensures Alembic can detect all table definitions
-from infrastructure.database import models
 
 # Load environment variables
 load_dotenv()

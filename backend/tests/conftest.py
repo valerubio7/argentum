@@ -17,6 +17,7 @@ TEST_DB_PATH = _test_db_file.name
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{TEST_DB_PATH}"
 
 # NOW import application modules (after DATABASE_URL is set)
+# ruff: noqa: E402
 from domain.entities.user import User
 from domain.value_objects.email import Email
 from domain.value_objects.password import HashedPassword
@@ -116,3 +117,76 @@ async def async_session(async_engine) -> AsyncSession:
     async with async_session_maker() as session:
         yield session
         await session.rollback()
+
+
+@pytest_asyncio.fixture
+async def test_session_factory(async_engine):
+    """Create session factory for tests."""
+    return async_sessionmaker(
+        async_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+
+
+@pytest_asyncio.fixture
+async def client(async_engine, test_session_factory, monkeypatch):
+    """Create test client with database override for API tests."""
+    import sys
+
+    # Replace the engine in the connection module before importing main
+    if "infrastructure.database.connection" in sys.modules:
+        connection_module = sys.modules["infrastructure.database.connection"]
+        monkeypatch.setattr(connection_module, "engine", async_engine)
+        monkeypatch.setattr(
+            connection_module, "AsyncSessionLocal", test_session_factory
+        )
+
+    # Import after patching
+    from main import app
+    from infrastructure.database.connection import get_db
+    from httpx import AsyncClient, ASGITransport
+
+    # Override get_db dependency
+    async def override_get_db():
+        async with test_session_factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
+
+    # Clean up
+    app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def test_user(client):
+    """Create a test user for authentication tests."""
+    user_data = {
+        "email": "test@example.com",
+        "username": "testuser",
+        "password": "TestPassword123!",
+    }
+
+    response = await client.post("/api/auth/register", json=user_data)
+    assert response.status_code == 201
+
+    # Return user data with plaintext password for login tests
+    return user_data
+
+
+@pytest_asyncio.fixture
+async def test_user_token(client, test_user):
+    """Get authentication token for test user."""
+    response = await client.post(
+        "/api/auth/login",
+        json={
+            "email": test_user["email"],
+            "password": test_user["password"],
+        },
+    )
+    assert response.status_code == 200
+    return response.json()["access_token"]
