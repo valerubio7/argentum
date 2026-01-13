@@ -102,9 +102,7 @@ backend/
 │
 ├── alembic/                         # Migraciones de base de datos
 │   ├── versions/
-│   │   ├── f0886c6a3ba1_create_users_table.py
-│   │   ├── ca722952e486_add_index_on_username_field.py
-│   │   └── 95584c0e0794_change_timestamps_to_timezone_aware.py
+│   │   └── 001_initial_migration.py  # Migración inicial (tabla users)
 │   ├── env.py                      # Config Alembic async
 │   └── script.py.mako
 │
@@ -124,11 +122,6 @@ backend/
 │           ├── test_auth_endpoints.py  # 17 tests
 │           └── middleware/
 │               └── test_request_id.py  # 12 tests
-│
-├── scripts/
-│   ├── clean.sh                    # Limpiar cache
-│   ├── format.sh                   # Formatear código
-│   └── lint.sh                     # Linter
 │
 ├── main.py                         # Entry point FastAPI
 ├── pyproject.toml                  # Dependencias y config
@@ -211,9 +204,9 @@ Una vez iniciado el servidor:
 
 ### Autenticación
 
-Base path: `/api/v1/auth`
+Base path: `/api/auth`
 
-#### POST /api/v1/auth/register
+#### POST /api/auth/register
 
 Registrar un nuevo usuario.
 
@@ -234,8 +227,7 @@ Registrar un nuevo usuario.
   "username": "john_doe",
   "is_active": true,
   "is_verified": false,
-  "created_at": "2024-01-13T12:00:00Z",
-  "updated_at": "2024-01-13T12:00:00Z"
+  "created_at": "2024-01-13T12:00:00Z"
 }
 ```
 
@@ -243,7 +235,7 @@ Registrar un nuevo usuario.
 - `400 Bad Request` - Email o username ya existe
 - `422 Unprocessable Entity` - Validación fallida
 
-#### POST /api/v1/auth/login
+#### POST /api/auth/login
 
 Iniciar sesión y obtener JWT token.
 
@@ -268,7 +260,7 @@ Iniciar sesión y obtener JWT token.
 - `401 Unauthorized` - Credenciales inválidas
 - `403 Forbidden` - Usuario inactivo
 
-#### GET /api/v1/auth/me
+#### GET /api/auth/me
 
 Obtener información del usuario autenticado.
 
@@ -285,8 +277,7 @@ Authorization: Bearer <access_token>
   "username": "john_doe",
   "is_active": true,
   "is_verified": false,
-  "created_at": "2024-01-13T12:00:00Z",
-  "updated_at": "2024-01-13T12:00:00Z"
+  "created_at": "2024-01-13T12:00:00Z"
 }
 ```
 
@@ -314,6 +305,7 @@ Authorization: Bearer <access_token>
 **Índices:**
 - `ix_users_id` - Índice en id (primary key)
 - `ix_users_email` - Índice único en email
+- `ix_users_username` - Índice único en username
 
 ### Migraciones con Alembic
 
@@ -335,9 +327,7 @@ uv run alembic history
 ```
 
 **Migraciones existentes:**
-1. `f0886c6a3ba1` - Crear tabla users
-2. `ca722952e486` - Agregar índice en username
-3. `95584c0e0794` - Timestamps con timezone
+1. `001` - Migración inicial (tabla users con todos los campos e índices)
 
 ## Testing
 
@@ -400,20 +390,13 @@ Los fixtures compartidos están en `tests/conftest.py`:
 
 ```bash
 # Formatear código
-./scripts/format.sh
-# o
 uv run ruff format .
 
 # Ejecutar linter
-./scripts/lint.sh
-# o
 uv run ruff check .
 
 # Autofix de problemas
 uv run ruff check --fix .
-
-# Limpiar cache
-./scripts/clean.sh
 ```
 
 **Configuración en `pyproject.toml`:**
@@ -595,9 +578,9 @@ uv run pytest -v                    # Verbose
 uv run pytest --cov=.              # Con coverage
 
 # Code Quality
-./scripts/format.sh                 # Formatear código
-./scripts/lint.sh                   # Linter
-./scripts/clean.sh                  # Limpiar cache
+uv run ruff format .                # Formatear código
+uv run ruff check .                 # Linter
+uv run ruff check --fix .           # Autofix
 
 # Database
 uv run alembic upgrade head         # Aplicar migraciones
