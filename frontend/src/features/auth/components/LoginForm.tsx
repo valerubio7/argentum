@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,6 +22,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>
 
 export function LoginForm() {
+  const navigate = useNavigate()
   const { mutate: login, isPending, error } = useLogin()
 
   const form = useForm<LoginFormValues>({
@@ -33,7 +34,11 @@ export function LoginForm() {
   })
 
   const onSubmit = (data: LoginFormValues) => {
-    login(data)
+    login(data, {
+      onSuccess: () => {
+        navigate('/dashboard')
+      },
+    })
   }
 
   return (
