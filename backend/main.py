@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from typing import Annotated
 
@@ -7,23 +8,23 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.database.connection import get_db, init_db
-from infrastructure.logging import get_logger, setup_logging
 from presentation.api.middleware import RequestIDMiddleware
 from presentation.api.routes.auth import router as auth_router
 from presentation.config import settings
 
-
-setup_logging(environment=settings.environment, log_level="INFO")
-logger = get_logger(__name__)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    logger.info("app_startup", message="Initializing database connection")
+    logger.info("Initializing database connection")
     await init_db()
     yield
-    logger.info("app_shutdown", message="Shutting down application")
+    logger.info("Shutting down application")
 
 
 app = FastAPI(
@@ -67,15 +68,10 @@ async def health_check_db(
     try:
         result = await session.execute(text("SELECT 1"))
         result.scalar()
-        logger.info("health_check_success", component="database")
+        logger.info("Database health check successful")
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
-        logger.error(
-            "health_check_failed",
-            component="database",
-            error=str(e),
-            error_type=type(e).__name__,
-        )
+        logger.error(f"Database health check failed: {type(e).__name__}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Database connection failed",
@@ -95,9 +91,6 @@ if __name__ == "__main__":
     import uvicorn
 
     logger.info(
-        "server_starting",
-        host=settings.host,
-        port=settings.port,
-        environment=settings.environment,
+        f"Server starting on {settings.host}:{settings.port} (environment: {settings.environment})"
     )
     uvicorn.run("main:app", host=settings.host, port=settings.port, reload=True)

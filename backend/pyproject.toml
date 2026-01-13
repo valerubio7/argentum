@@ -13,7 +13,6 @@ dependencies = [
     "pyjwt>=2.10.1",
     "python-dotenv>=1.0.0",
     "sqlalchemy[asyncio]>=2.0.45",
-    "structlog>=25.5.0",
 ]
 
 [dependency-groups]

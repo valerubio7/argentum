@@ -1,5 +1,6 @@
 """Authentication routes."""
 
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -14,7 +15,6 @@ from domain.exceptions.user_exceptions import (
     UserAlreadyExistsError,
     UserNotActiveError,
 )
-from infrastructure.logging import get_logger
 from presentation.api.dependencies import (
     get_current_user,
     get_login_user_use_case,
@@ -28,7 +28,7 @@ from presentation.api.schemas import (
     UserResponse,
 )
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -72,7 +72,7 @@ async def register(
     """
     try:
         logger.info(
-            "register_request_received", email=request.email, username=request.username
+            f"Register request received for email={request.email}, username={request.username}"
         )
 
         # Convert Pydantic model to DTO
@@ -87,10 +87,7 @@ async def register(
         await session.commit()
 
         logger.info(
-            "register_request_success",
-            email=request.email,
-            username=request.username,
-            user_id=user_dto.id,
+            f"Register request successful for email={request.email}, username={request.username}, user_id={user_dto.id}"
         )
 
         # Convert DTO to response
@@ -106,11 +103,7 @@ async def register(
     except UserAlreadyExistsError as e:
         await session.rollback()
         logger.warning(
-            "register_request_failed",
-            email=request.email,
-            username=request.username,
-            reason="user_already_exists",
-            error=str(e),
+            f"Register request failed for email={request.email}, username={request.username}: user already exists - {str(e)}"
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -119,11 +112,7 @@ async def register(
     except ValueError as e:
         await session.rollback()
         logger.warning(
-            "register_request_failed",
-            email=request.email,
-            username=request.username,
-            reason="validation_error",
-            error=str(e),
+            f"Register request failed for email={request.email}, username={request.username}: validation error - {str(e)}"
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -167,7 +156,7 @@ async def login(
         HTTPException: If credentials are invalid or user is not active
     """
     try:
-        logger.info("login_request_received", email=request.email)
+        logger.info(f"Login request received for email={request.email}")
 
         # Convert Pydantic model to DTO
         dto = LoginDTO(email=request.email, password=request.password)
@@ -175,7 +164,7 @@ async def login(
         # Execute use case
         token_dto = await use_case.execute(dto)
 
-        logger.info("login_request_success", email=request.email)
+        logger.info(f"Login request successful for email={request.email}")
 
         # Convert DTO to response
         return TokenResponse(
@@ -186,10 +175,7 @@ async def login(
 
     except UserNotActiveError as e:
         logger.warning(
-            "login_request_failed",
-            email=request.email,
-            reason="user_not_active",
-            error=str(e),
+            f"Login request failed for email={request.email}: user not active - {str(e)}"
         )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -197,7 +183,7 @@ async def login(
         )
     except InvalidCredentialsError as e:
         logger.warning(
-            "login_request_failed", email=request.email, reason="invalid_credentials"
+            f"Login request failed for email={request.email}: invalid credentials"
         )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -206,10 +192,7 @@ async def login(
         )
     except ValueError as e:
         logger.warning(
-            "login_request_failed",
-            email=request.email,
-            reason="validation_error",
-            error=str(e),
+            f"Login request failed for email={request.email}: validation error - {str(e)}"
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -245,9 +228,7 @@ async def get_me(
         UserResponse: Current user data
     """
     logger.info(
-        "get_me_request_success",
-        user_id=str(current_user.id),
-        username=current_user.username,
+        f"Get me request successful for user_id={str(current_user.id)}, username={current_user.username}"
     )
     return UserResponse(
         id=str(current_user.id),
