@@ -9,7 +9,10 @@ from dotenv import load_dotenv
 
 from alembic import context
 from infrastructure.database.connection import Base
-from infrastructure.database.models import UserModel
+
+# Import all models for autogenerate support
+# This ensures Alembic can detect all table definitions
+from infrastructure.database import models
 
 # Load environment variables
 load_dotenv()
@@ -26,9 +29,7 @@ config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL", ""))
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Ensure models are imported for autogenerate support
-_ = UserModel
-
+# Add all models metadata for Alembic autogenerate
 target_metadata = Base.metadata
 
 
