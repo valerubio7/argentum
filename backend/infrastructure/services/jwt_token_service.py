@@ -25,13 +25,6 @@ class JWTTokenService(TokenService):
         algorithm: str = "HS256",
         access_token_expire_minutes: int = 30,
     ):
-        """Initialize the JWT token service.
-
-        Args:
-            secret_key: Secret key for signing tokens
-            algorithm: JWT algorithm (default: HS256)
-            access_token_expire_minutes: Token expiration time in minutes (default: 30)
-        """
         if not secret_key:
             raise ValueError("Secret key cannot be empty")
 
@@ -59,20 +52,17 @@ class JWTTokenService(TokenService):
         if not email:
             raise ValueError("Email cannot be empty")
 
-        # Calculate expiration time
         expires_at = datetime.now(timezone.utc) + timedelta(
             minutes=self._access_token_expire_minutes
         )
 
-        # Create token payload
         payload = {
-            "sub": str(user_id),  # Subject (user ID)
+            "sub": str(user_id),
             "email": email,
-            "exp": expires_at,  # Expiration time
-            "iat": datetime.now(timezone.utc),  # Issued at
+            "exp": expires_at,
+            "iat": datetime.now(timezone.utc),
         }
 
-        # Generate token
         token = jwt.encode(payload, self._secret_key, algorithm=self._algorithm)
 
         return token, expires_at

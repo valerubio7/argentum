@@ -8,11 +8,9 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 class RegisterRequest(BaseModel):
     """Request schema for user registration."""
 
-    email: EmailStr = Field(..., description="User email address")
-    password: str = Field(
-        ..., min_length=8, max_length=128, description="User password"
-    )
-    username: str = Field(..., min_length=3, max_length=50, description="Username")
+    email: EmailStr
+    password: str = Field(..., min_length=8, max_length=128)
+    username: str = Field(..., min_length=3, max_length=50)
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -28,8 +26,8 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     """Request schema for user login."""
 
-    email: EmailStr = Field(..., description="User email address")
-    password: str = Field(..., description="User password")
+    email: EmailStr
+    password: str
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -41,12 +39,12 @@ class LoginRequest(BaseModel):
 class UserResponse(BaseModel):
     """Response schema for user data."""
 
-    id: str = Field(..., description="User unique identifier")
-    email: str = Field(..., description="User email address")
-    username: str = Field(..., description="Username")
-    is_active: bool = Field(..., description="Whether user account is active")
-    is_verified: bool = Field(..., description="Whether user email is verified")
-    created_at: datetime = Field(..., description="User creation timestamp")
+    id: str
+    email: str
+    username: str
+    is_active: bool
+    is_verified: bool
+    created_at: datetime
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -65,9 +63,9 @@ class UserResponse(BaseModel):
 class TokenResponse(BaseModel):
     """Response schema for authentication token."""
 
-    access_token: str = Field(..., description="JWT access token")
-    token_type: str = Field(default="bearer", description="Token type")
-    expires_at: datetime | None = Field(None, description="Token expiration timestamp")
+    access_token: str
+    token_type: str = "bearer"
+    expires_at: datetime | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -83,7 +81,7 @@ class TokenResponse(BaseModel):
 class ErrorResponse(BaseModel):
     """Response schema for errors."""
 
-    detail: str = Field(..., description="Error message")
+    detail: str
 
     model_config = ConfigDict(
         json_schema_extra={"example": {"detail": "Invalid credentials"}}

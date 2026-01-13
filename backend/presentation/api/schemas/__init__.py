@@ -1,5 +1,3 @@
-"""API schemas package."""
-
 from presentation.api.schemas.auth_schemas import (
     ErrorResponse,
     LoginRequest,

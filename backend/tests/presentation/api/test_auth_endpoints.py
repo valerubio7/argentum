@@ -21,7 +21,6 @@ async def test_engine():
     """
     # Import after DATABASE_URL is set in conftest
     from infrastructure.database.connection import Base
-    from sqlalchemy import text
 
     # Create a NEW temporary database file for each test
     # This ensures complete isolation regardless of execution order
@@ -78,10 +77,6 @@ async def client(test_engine, test_session_factory, monkeypatch):
     # we use our test engine
     if "infrastructure.database.connection" in sys.modules:
         connection_module = sys.modules["infrastructure.database.connection"]
-        # Store original engine to restore later
-        original_engine = connection_module.engine
-        original_sessionmaker = connection_module.AsyncSessionLocal
-        # Replace with test engine
         monkeypatch.setattr(connection_module, "engine", test_engine)
         monkeypatch.setattr(
             connection_module, "AsyncSessionLocal", test_session_factory

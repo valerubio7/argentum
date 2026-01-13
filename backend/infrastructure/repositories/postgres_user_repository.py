@@ -16,25 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 class PostgresUserRepository(UserRepository):
-    """PostgreSQL implementation of the UserRepository interface."""
-
     def __init__(self, session: AsyncSession):
-        """Initialize repository with database session.
-
-        Args:
-            session: SQLAlchemy async session for database operations.
-        """
         self._session = session
 
     def _to_entity(self, model: UserModel) -> User:
-        """Map UserModel to User domain entity.
-
-        Args:
-            model: SQLAlchemy UserModel instance.
-
-        Returns:
-            User domain entity.
-        """
         return User(
             id=model.id,
             email=Email(model.email),
@@ -47,14 +32,6 @@ class PostgresUserRepository(UserRepository):
         )
 
     def _to_model(self, entity: User) -> UserModel:
-        """Map User domain entity to UserModel.
-
-        Args:
-            entity: User domain entity.
-
-        Returns:
-            SQLAlchemy UserModel instance.
-        """
         return UserModel(
             id=entity.id,
             email=entity.email.value,
@@ -68,12 +45,6 @@ class PostgresUserRepository(UserRepository):
 
     async def save(self, user: User) -> User:
         """Save a user to the database.
-
-        Args:
-            user: User entity to save.
-
-        Returns:
-            Saved User entity with updated timestamps.
 
         Raises:
             UserAlreadyExistsError: If email or username already exists.
@@ -93,42 +64,18 @@ class PostgresUserRepository(UserRepository):
         return self._to_entity(model)
 
     async def find_by_id(self, user_id: UUID) -> User | None:
-        """Find user by ID.
-
-        Args:
-            user_id: UUID of the user to find.
-
-        Returns:
-            User entity if found, None otherwise.
-        """
         stmt = select(UserModel).where(UserModel.id == user_id)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
     async def find_by_email(self, email: Email) -> User | None:
-        """Find user by email.
-
-        Args:
-            email: Email value object to search for.
-
-        Returns:
-            User entity if found, None otherwise.
-        """
         stmt = select(UserModel).where(UserModel.email == email.value)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
     async def find_by_username(self, username: str) -> User | None:
-        """Find user by username.
-
-        Args:
-            username: Username to search for.
-
-        Returns:
-            User entity if found, None otherwise.
-        """
         stmt = select(UserModel).where(UserModel.username == username)
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
@@ -136,12 +83,6 @@ class PostgresUserRepository(UserRepository):
 
     async def update(self, user: User) -> User:
         """Update existing user.
-
-        Args:
-            user: User entity with updated data.
-
-        Returns:
-            Updated User entity.
 
         Raises:
             UserNotFoundError: If user doesn't exist.
@@ -166,65 +107,27 @@ class PostgresUserRepository(UserRepository):
         return self._to_entity(model)
 
     async def delete(self, user_id: UUID) -> bool:
-        """Delete user by ID.
-
-        Args:
-            user_id: UUID of the user to delete.
-
-        Returns:
-            True if user was deleted, False if not found.
-        """
         stmt = sql_delete(UserModel).where(UserModel.id == user_id)
         result = await self._session.execute(stmt)
         return result.rowcount > 0
 
     async def exists_by_email(self, email: Email) -> bool:
-        """Check if email exists.
-
-        Args:
-            email: Email value object to check.
-
-        Returns:
-            True if email exists, False otherwise.
-        """
         stmt = select(UserModel.id).where(UserModel.email == email.value)
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none() is not None
 
     async def exists_by_username(self, username: str) -> bool:
-        """Check if username exists.
-
-        Args:
-            username: Username to check.
-
-        Returns:
-            True if username exists, False otherwise.
-        """
         stmt = select(UserModel.id).where(UserModel.username == username)
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none() is not None
 
     async def list_all(self, limit: int = 100, offset: int = 0) -> list[User]:
-        """List users with pagination.
-
-        Args:
-            limit: Maximum number of users to return.
-            offset: Number of users to skip.
-
-        Returns:
-            List of User entities.
-        """
         stmt = select(UserModel).limit(limit).offset(offset)
         result = await self._session.execute(stmt)
         models = result.scalars().all()
         return [self._to_entity(model) for model in models]
 
     async def count(self) -> int:
-        """Count total users.
-
-        Returns:
-            Total number of users in the database.
-        """
         stmt = select(func.count(UserModel.id))
         result = await self._session.execute(stmt)
         return result.scalar_one()

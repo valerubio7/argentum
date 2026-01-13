@@ -27,7 +27,6 @@ security = HTTPBearer()
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    """Get database session dependency."""
     async for session in get_db():
         yield session
 
@@ -35,19 +34,16 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 async def get_user_repository(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> UserRepository:
-    """Get user repository dependency."""
     return PostgresUserRepository(session)
 
 
 @lru_cache
 def get_hash_service() -> HashService:
-    """Get hash service dependency (singleton)."""
     return BcryptHashService(rounds=settings.bcrypt_rounds)
 
 
 @lru_cache
 def get_token_service() -> TokenService:
-    """Get token service dependency (singleton)."""
     return JWTTokenService(
         secret_key=settings.jwt_secret_key,
         algorithm=settings.jwt_algorithm,
@@ -59,7 +55,6 @@ async def get_register_user_use_case(
     repository: Annotated[UserRepository, Depends(get_user_repository)],
     hash_service: Annotated[HashService, Depends(get_hash_service)],
 ) -> RegisterUser:
-    """Get register user use case dependency."""
     return RegisterUser(user_repository=repository, hash_service=hash_service)
 
 
@@ -68,7 +63,6 @@ async def get_login_user_use_case(
     hash_service: Annotated[HashService, Depends(get_hash_service)],
     token_service: Annotated[TokenService, Depends(get_token_service)],
 ) -> LoginUser:
-    """Get login user use case dependency."""
     return LoginUser(
         user_repository=repository,
         hash_service=hash_service,
@@ -82,14 +76,6 @@ async def get_current_user(
     token_service: Annotated[TokenService, Depends(get_token_service)],
 ) -> User:
     """Get current authenticated user from JWT token.
-
-    Args:
-        credentials: HTTP Bearer token credentials
-        repository: User repository
-        token_service: Token service
-
-    Returns:
-        Current authenticated user
 
     Raises:
         HTTPException: If token is invalid or user not found

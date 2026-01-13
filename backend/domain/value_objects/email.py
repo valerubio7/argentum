@@ -18,7 +18,6 @@ class Email:
     EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
     def __post_init__(self):
-        """Validate email format after initialization."""
         if not self.value:
             raise ValueError("Email cannot be empty")
 

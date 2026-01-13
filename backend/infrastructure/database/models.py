@@ -11,8 +11,6 @@ from infrastructure.database.connection import Base
 
 
 class UserModel(Base):
-    """SQLAlchemy model for User entity."""
-
     __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(

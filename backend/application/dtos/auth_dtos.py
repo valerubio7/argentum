@@ -17,7 +17,6 @@ class RegisterUserDTO:
     username: str
 
     def __post_init__(self):
-        """Validate DTO fields."""
         if not self.email:
             raise ValueError("Email is required")
         if not self.password:
@@ -38,7 +37,6 @@ class LoginDTO:
     password: str
 
     def __post_init__(self):
-        """Validate DTO fields."""
         if not self.email:
             raise ValueError("Email is required")
         if not self.password:
@@ -58,7 +56,6 @@ class TokenDTO:
     expires_at: datetime | None = None
 
     def __post_init__(self):
-        """Validate DTO fields."""
         if not self.access_token:
             raise ValueError("Access token is required")
         if not self.token_type:
@@ -81,7 +78,6 @@ class UserResponseDTO:
     created_at: datetime
 
     def __post_init__(self):
-        """Validate DTO fields."""
         if not self.id:
             raise ValueError("User ID is required")
         if not self.email:

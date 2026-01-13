@@ -16,12 +16,6 @@ class BcryptHashService(HashService):
     """
 
     def __init__(self, rounds: int = 12):
-        """Initialize the hash service.
-
-        Args:
-            rounds: Number of rounds for bcrypt (default: 12)
-                   Higher is more secure but slower
-        """
         self._rounds = rounds
 
     def hash_password(self, plain_password: str) -> str:
@@ -37,7 +31,6 @@ class BcryptHashService(HashService):
             Input validation is handled by PlainPassword value object.
             This service assumes valid input.
         """
-        # Generate salt and hash password
         salt = bcrypt.gensalt(rounds=self._rounds)
         hashed = bcrypt.hashpw(plain_password.encode("utf-8"), salt)
         return hashed.decode("utf-8")

@@ -5,14 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import declarative_base
 from dotenv import load_dotenv
 
-# Only override env vars if not already set (e.g., by tests)
 load_dotenv(override=False)
 
 logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 
-# Validate DATABASE_URL
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError(
@@ -20,10 +18,8 @@ if not DATABASE_URL:
         "Please set it in your .env file or environment."
     )
 
-# Only echo SQL in development
 is_development = os.getenv("ENVIRONMENT", "development").lower() == "development"
 
-# Get connection pool configuration from environment
 pool_size = int(os.getenv("DB_POOL_SIZE", "5"))
 max_overflow = int(os.getenv("DB_MAX_OVERFLOW", "10"))
 pool_timeout = int(os.getenv("DB_POOL_TIMEOUT", "30"))
@@ -32,11 +28,11 @@ pool_recycle = int(os.getenv("DB_POOL_RECYCLE", "3600"))
 engine = create_async_engine(
     DATABASE_URL,
     echo=is_development,
-    pool_pre_ping=True,  # Verify connections before using
-    pool_size=pool_size,  # Number of connections to maintain
-    max_overflow=max_overflow,  # Additional connections when pool is full
-    pool_timeout=pool_timeout,  # Seconds to wait for connection
-    pool_recycle=pool_recycle,  # Recycle connections after N seconds
+    pool_pre_ping=True,
+    pool_size=pool_size,
+    max_overflow=max_overflow,
+    pool_timeout=pool_timeout,
+    pool_recycle=pool_recycle,
 )
 
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)

@@ -1,6 +1,5 @@
 """Tests for BcryptHashService."""
 
-import pytest
 import re
 
 from infrastructure.services.hash_service import BcryptHashService

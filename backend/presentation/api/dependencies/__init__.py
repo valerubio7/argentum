@@ -1,5 +1,3 @@
-"""API dependencies package."""
-
 from presentation.api.dependencies.auth import (
     get_current_user,
     get_hash_service,

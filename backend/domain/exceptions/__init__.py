@@ -1,5 +1,3 @@
-"""Domain exceptions package."""
-
 from domain.exceptions.user_exceptions import (
     UserDomainError,
     UserNotFoundError,

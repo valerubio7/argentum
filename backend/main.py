@@ -13,7 +13,6 @@ from presentation.api.routes.auth import router as auth_router
 from presentation.config import settings
 
 
-# Configure structured logging
 setup_logging(environment=settings.environment, log_level="INFO")
 logger = get_logger(__name__)
 
@@ -21,11 +20,9 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    # Startup
     logger.info("app_startup", message="Initializing database connection")
     await init_db()
     yield
-    # Shutdown (if needed)
     logger.info("app_shutdown", message="Shutting down application")
 
 
@@ -37,13 +34,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Register authentication router
 app.include_router(auth_router, prefix="/api")
 
-# Add Request ID middleware (must be added BEFORE CORS)
+# Must be added before CORS
 app.add_middleware(RequestIDMiddleware)
 
-# CORS middleware with restricted methods and headers for security
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -66,13 +61,10 @@ async def health_check_db(
 ):
     """Database health check endpoint.
 
-    Verifies database connectivity by executing a simple query.
-
     Raises:
         HTTPException: 503 if database is unreachable
     """
     try:
-        # Simple query to check database connectivity
         result = await session.execute(text("SELECT 1"))
         result.scalar()
         logger.info("health_check_success", component="database")

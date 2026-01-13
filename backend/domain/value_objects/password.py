@@ -14,7 +14,6 @@ class HashedPassword:
     value: str
 
     def __post_init__(self):
-        """Validate hashed password."""
         if not self.value:
             raise ValueError("Hashed password cannot be empty")
 
@@ -48,7 +47,6 @@ class PlainPassword:
     MAX_LENGTH = 128
 
     def __post_init__(self):
-        """Validate plain password requirements."""
         if not self.value:
             raise ValueError("Password cannot be empty")
 

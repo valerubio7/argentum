@@ -32,13 +32,6 @@ class LoginUser:
         hash_service: HashService,
         token_service: TokenService,
     ):
-        """Initialize the login user use case.
-
-        Args:
-            user_repository: Repository for user retrieval
-            hash_service: Service for password verification
-            token_service: Service for JWT token generation
-        """
         self._user_repository = user_repository
         self._hash_service = hash_service
         self._token_service = token_service
@@ -46,26 +39,17 @@ class LoginUser:
     async def execute(self, dto: LoginDTO) -> TokenDTO:
         """Execute the user login use case.
 
-        Args:
-            dto: Login data transfer object
-
-        Returns:
-            TokenDTO with authentication token
-
         Raises:
             InvalidCredentialsError: If email or password is incorrect
             UserNotActiveError: If user account is not active
             ValueError: If input validation fails
         """
-        # 1. Validate and create email value object
         email = Email(dto.email)
 
-        # 2. Find user by email
         user = await self._user_repository.find_by_email(email)
         if user is None:
             raise InvalidCredentialsError()
 
-        # 3. Verify password
         is_password_valid = self._hash_service.verify_password(
             dto.password, user.hashed_password.value
         )
@@ -73,14 +57,12 @@ class LoginUser:
             logger.warning(f"Login failed - invalid password for email: {dto.email}")
             raise InvalidCredentialsError()
 
-        # 4. Check if user is active
         if not user.is_active:
             logger.warning(
                 f"Login failed - inactive user: {dto.email} (user_id: {str(user.id)})"
             )
             raise UserNotActiveError(user.email.value)
 
-        # 5. Generate authentication token
         token, expires_at = self._token_service.generate_token(
             user_id=user.id, email=user.email.value
         )
@@ -90,7 +72,6 @@ class LoginUser:
             f"email: {user.email.value}, user_id: {str(user.id)}"
         )
 
-        # 6. Return token DTO
         return TokenDTO(
             access_token=token,
             token_type="bearer",

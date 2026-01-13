@@ -1,5 +1,3 @@
-"""Application DTOs (Data Transfer Objects) package."""
-
 from application.dtos.auth_dtos import (
     LoginDTO,
     RegisterUserDTO,
