@@ -1,3 +1,5 @@
+# === GLOBAL GITIGNORE ===
+
 # Dependencies
 node_modules/
 
@@ -6,6 +8,20 @@ node_modules/
 .env.local
 .env.*.local
 
+# === FRONTEND ===
+# Build outputs
+frontend/dist/
+frontend/dist-ssr/
+frontend/build/
+
+# Vite
+frontend/.vite/
+
+# Testing
+frontend/coverage/
+frontend/.nyc_output/
+
+# === BACKEND ===
 # Python
 __pycache__/
 *.py[cod]
@@ -15,23 +31,45 @@ venv/
 ENV/
 *.egg-info/
 
-# Build outputs
-dist/
-build/
-*.log
+# Alembic
+backend/alembic/__pycache__/
 
-# IDEs
+# Testing
+backend/coverage/
+backend/.coverage
+backend/htmlcov/
+backend/.pytest_cache/
+
+# Ruff cache
+.ruff_cache/
+
+# === BUILD & LOGS ===
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+
+# === IDEs & EDITORS ===
 .vscode/
 .idea/
 *.swp
-.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Database
+# === OS FILES ===
+.DS_Store
+Thumbs.db
+
+# === DATABASE ===
 *.db
 *.sqlite
 
-# Testing
-coverage/
-.coverage
-htmlcov/
-.pytest_cache/
+# === TEMP FILES ===
+*.tmp
+*.temp
+*.local

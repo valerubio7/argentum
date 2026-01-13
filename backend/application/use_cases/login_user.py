@@ -1,5 +1,7 @@
 """Use case for user login."""
 
+import logging
+
 from application.dtos.auth_dtos import LoginDTO, TokenDTO
 from application.interfaces.hash_service import HashService
 from application.interfaces.token_service import TokenService
@@ -9,9 +11,8 @@ from domain.exceptions.user_exceptions import (
 )
 from domain.repositories.user_repository import UserRepository
 from domain.value_objects.email import Email
-from infrastructure.logging import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class LoginUser:
@@ -69,20 +70,13 @@ class LoginUser:
             dto.password, user.hashed_password.value
         )
         if not is_password_valid:
-            logger.warning(
-                "login_failed_invalid_password",
-                email=dto.email,
-                reason="invalid_password",
-            )
+            logger.warning(f"Login failed - invalid password for email: {dto.email}")
             raise InvalidCredentialsError()
 
         # 4. Check if user is active
         if not user.is_active:
             logger.warning(
-                "login_failed_inactive_user",
-                email=dto.email,
-                user_id=str(user.id),
-                reason="inactive_user",
+                f"Login failed - inactive user: {dto.email} (user_id: {str(user.id)})"
             )
             raise UserNotActiveError(user.email.value)
 
@@ -92,10 +86,8 @@ class LoginUser:
         )
 
         logger.info(
-            "user_login_success",
-            username=user.username,
-            email=user.email.value,
-            user_id=str(user.id),
+            f"User login success - username: {user.username}, "
+            f"email: {user.email.value}, user_id: {str(user.id)}"
         )
 
         # 6. Return token DTO

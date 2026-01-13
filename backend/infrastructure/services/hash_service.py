@@ -1,8 +1,12 @@
 """Bcrypt implementation of HashService."""
 
+import logging
+
 import bcrypt
 
 from application.interfaces.hash_service import HashService
+
+logger = logging.getLogger(__name__)
 
 
 class BcryptHashService(HashService):
@@ -49,12 +53,18 @@ class BcryptHashService(HashService):
             True if password matches, False otherwise
 
         Note:
-            Returns False for any bcrypt errors (invalid hash format, etc.)
+            Returns False for bcrypt-specific errors (invalid hash format).
+            Logs and re-raises unexpected exceptions.
         """
         try:
             return bcrypt.checkpw(
                 plain_password.encode("utf-8"), hashed_password.encode("utf-8")
             )
-        except Exception:
-            # If bcrypt raises any exception (invalid hash format, etc.)
+        except (ValueError, AttributeError) as e:
+            # Invalid hash format or encoding issues - expected errors
+            logger.debug(f"Password verification failed due to invalid hash: {e}")
             return False
+        except Exception as e:
+            # Unexpected errors should be logged and re-raised
+            logger.error(f"Unexpected error during password verification: {e}")
+            raise

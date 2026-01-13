@@ -1,5 +1,7 @@
 """Use case for user registration."""
 
+import logging
+
 from application.dtos.auth_dtos import RegisterUserDTO, UserResponseDTO
 from application.interfaces.hash_service import HashService
 from domain.entities.user import User
@@ -7,9 +9,8 @@ from domain.exceptions.user_exceptions import UserAlreadyExistsError
 from domain.repositories.user_repository import UserRepository
 from domain.value_objects.email import Email
 from domain.value_objects.password import HashedPassword, PlainPassword
-from infrastructure.logging import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class RegisterUser:
@@ -79,10 +80,8 @@ class RegisterUser:
         saved_user = await self._user_repository.save(user)
 
         logger.info(
-            "user_registered",
-            username=saved_user.username,
-            email=saved_user.email.value,
-            user_id=str(saved_user.id),
+            f"User registered - username: {saved_user.username}, "
+            f"email: {saved_user.email.value}, user_id: {str(saved_user.id)}"
         )
 
         # 7. Return DTO response

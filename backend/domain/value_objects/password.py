@@ -61,6 +61,17 @@ class PlainPassword:
         if len(self.value) > self.MAX_LENGTH:
             raise ValueError(f"Password must be at most {self.MAX_LENGTH} characters")
 
+        # Check password complexity
+        has_upper = any(c.isupper() for c in self.value)
+        has_lower = any(c.islower() for c in self.value)
+        has_digit = any(c.isdigit() for c in self.value)
+
+        if not (has_upper and has_lower and has_digit):
+            raise ValueError(
+                "Password must contain at least one uppercase letter, "
+                "one lowercase letter, and one digit"
+            )
+
     def __str__(self) -> str:
         """Don't expose the password in string representation."""
         return "***HIDDEN***"

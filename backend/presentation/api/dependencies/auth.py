@@ -3,6 +3,7 @@
 from collections.abc import AsyncGenerator
 from functools import lru_cache
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -107,10 +108,17 @@ async def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        # Find user
-        from uuid import UUID
+        # Find user - validate UUID format
+        try:
+            user_uuid = UUID(user_id)
+        except (ValueError, TypeError, AttributeError) as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid token: malformed user_id ({str(e)})",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
-        user = await repository.find_by_id(UUID(user_id))
+        user = await repository.find_by_id(user_uuid)
 
         if user is None:
             raise HTTPException(
