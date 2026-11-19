@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="282" viewBox="0 0 600 282" role="img" aria-labelledby="title desc">
+  <title id="title">Argentum — Financial Intelligence Platform</title>
+  <desc id="desc">Identidad visual de Argentum con símbolo plateado sobre fondo azul oscuro y el lema Simulate. Optimize. Prosper.</desc>
+  <defs>
+    <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="50%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+  </defs>
+  <rect x="0.5" y="0.5" width="599" height="281" rx="16" fill="#10141D" stroke="#334155"/>
+  <svg x="245" y="28" width="110" height="100" viewBox="0 0 120 110">
+    <path d="M60 8 L108 97 H88 L60 43 L31 97 H12 Z" fill="url(#silver)"/>
+    <path d="M34 76 L58 59 L70 70 L98 32" stroke="#e2e8f0" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M83 32 H98 V47" stroke="#e2e8f0" stroke-width="5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>
+  <g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <text x="300" y="161" font-size="24" font-weight="600" fill="#e2e8f0">A R G E N T U M</text>
+    <text x="300" y="191" font-size="14" fill="#94a3b8">FINANCIAL INTELLIGENCE PLATFORM</text>
+    <path d="M28 212 H572" stroke="#334155" stroke-width="1"/>
+    <text x="300" y="245" font-size="16" fill="#cbd5e1">Simulate. Optimize. Prosper.</text>
+  </g>
+</svg>

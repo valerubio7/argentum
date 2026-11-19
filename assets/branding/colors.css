@@ -1,0 +1,28 @@
+
+/* ARGENTUM — Official Design Tokens */
+
+:root {
+    /* Brand palette */
+    --argentum-midnight: #10141D;
+    --argentum-bright-silver: #F8FAFC;
+    --argentum-metallic-silver: #CBD5E1;
+    --argentum-dark-silver: #64748B;
+    --argentum-light-silver: #E2E8F0;
+    --argentum-slate-gray: #94A3B8;
+
+    /* Semantic colors */
+    --color-background: var(--argentum-midnight);
+    --color-primary: var(--argentum-metallic-silver);
+    --color-text-primary: var(--argentum-light-silver);
+    --color-text-secondary: var(--argentum-slate-gray);
+    --color-text-muted: var(--argentum-dark-silver);
+
+    /* Brand gradient */
+    --gradient-silver: linear-gradient(
+        135deg,
+        #F8FAFC 0%,
+        #CBD5E1 50%,
+        #64748B 100%
+    );
+}
+

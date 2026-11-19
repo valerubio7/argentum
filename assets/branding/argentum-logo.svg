@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 110" width="110" height="100" role="img" aria-labelledby="title">
+  <title id="title">Argentum — isotipo</title>
+  <defs>
+    <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="50%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+  </defs>
+  <path d="M60 8 L108 97 H88 L60 43 L31 97 H12 Z" fill="url(#silver)"/>
+  <path d="M34 76 L58 59 L70 70 L98 32" stroke="#e2e8f0" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M83 32 H98 V47" stroke="#e2e8f0" stroke-width="5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>
